@@ -1,19 +1,15 @@
-# KAISER: KAIst Semantic parsER
-**\*\*\*\*\* \[Update\] November, 2019  \*\*\*\*\***
+# frameBERT: BERT for frame-semantic parsing
+**\*\*\*\*\* \[Update\] February, 2020  \*\*\*\*\***
 
-Kaiser is available for both of English FrameNet and [Korean FrameNet](https://github.com/machinereading/koreanframenet) 
+The frameBERT is available for both of English FrameNet and [Korean FrameNet](https://github.com/machinereading/koreanframenet) 
 
 ## About
-Kaiser is a semantic parser to understand the meaning of texts in terms of [FrameNet](https://framenet.icsi.berkeley.edu/fndrupal/). 
+The frameBERT is a frame-semantic parser to understand the meaning of texts in terms of [FrameNet](https://framenet.icsi.berkeley.edu/fndrupal/). 
 
 **frame** (frame semantics) is a schematic representation of a situation or an event. 
-For an example sentence, '헤밍웨이는 1899년 7월 21일 일리노이에서 태어났고, 62세에 자살로 사망했다.', KAIST-frame-parser identifies several frames such as `Being_born` and `Death` for Korean lexical units (e.g. 태어나다.v and 사망하다.v)
+For an example sentence, '헤밍웨이는 1899년 7월 21일 일리노이에서 태어났고, 62세에 자살로 사망했다.', frameBERT identifies several frames such as `Being_born` and `Death` for Korean lexical units (e.g. 태어나다.v and 사망하다.v)
 
 <img src="./images/framenet.png" width="60%" height="60%">
-
-Our model is based on the BERT with fine-tuning. The model predict Frames and their arguments jointly.
-
-<img src="./images/framenet-bert.png" width="60%" height="60%">
 
 ## prerequisite
 * `python 3`
@@ -23,11 +19,11 @@ Our model is based on the BERT with fine-tuning. The model predict Frames and th
 ## How to use
 **Install**
 
-Install `transformers`, `kaiser`, and Korean FrameNet
+Install `transformers`, `frameBERT`, and Korean FrameNet
 ```
 pip install transformers
-git clone https://github.com/machinereading/kaiser.git
-cd ./kaiser
+git clone https://github.com/machinereading/frameBERT.git
+cd frameBERT
 git clone https://github.com/machinereading/koreanframenet.git
 ```
 
@@ -35,18 +31,16 @@ git clone https://github.com/machinereading/koreanframenet.git
 
 **Download the pretrained model**
 
-Download two pretrained model files to `{your_model_dir}` (e.g. `/home/model/bert_ko_srl_model.pt`). 
-* **Korean Model:** ([download](https://drive.google.com/open?id=1HTytgRg6xpXTJgZOvif1tcuLNr5yojRt))
-* **English Model:** ([download](https://drive.google.com/open?id=1HTytgRg6xpXTJgZOvif1tcuLNr5yojRt))
-* **Multilingual Model (En+Ko):** ([download](https://drive.google.com/open?id=1HTytgRg6xpXTJgZOvif1tcuLNr5yojRt))
+Download two pretrained model files to `{your_model_dir}` (e.g. `/home/model/`). 
+* **Multilingual Model (En+Ko):** ([download](https://drive.google.com/open?id=153gLX8lIOY8KxGHGgeopCKGDtntCO9fz))
 
 **Import model (in your python code)**
-(make sure that your code is in a parent folder of kaiser)
+(make sure that your code is in a parent folder of frameBERT)
 ```
-from kaiser import kaiser
+from frameBERT import frame_parser
 
-model_path = {your_model_dir} # absolute_path (e.g. /home/model/bert_ko_frame_model.pt)
-parser = parser.ShallowSemanticParser(model_path=model_path, masking=True)
+model_path = {your_model_dir} # absolute_path (e.g. /home/model/)
+parser = frame_parser.FrameParser(model_path=model_path, masking=True)
 ```
 ***optional***: If you want to DO NOT USE LU DICTIONARY, set argument `masking=False`)
 
@@ -102,44 +96,6 @@ The result is a list, which consists of multiple Frame-Semantic structures. Each
 ]
 ```
 
-Another example sentence is '그는 그녀와 사랑에 빠졌다.'.
-```
-[
-    [
-        ['그는', '그녀와', '사랑에', '빠졌다.'], 
-        ['_', '_', '사랑.n', '_'], 
-        ['_', '_', 'Personal_relationship', '_'], 
-        ['B-Partner_1', 'B-Partner_2', 'O', 'O']
-    ],
-    [
-        ['그는', '그녀와', '사랑에', '빠졌다.'], 
-        ['_', '_', '_', '빠지다.v'], 
-        ['_', '_', '_', 'Experiencer_focus'], 
-        ['B-Experiencer', 'B-Topic', 'I-Topic', 'O']
-    ]
-]
-```
-The word '빠지다' would be have different meaning in its usage in the context. 
-
-An example is '검은 얼룩이 흰 옷에서 빠졌다.'.
-```
-[
-    [
-        ['검은', '얼룩이', '흰', '옷에서', '빠졌다.'], 
-        ['_', '_', '_', '옷.n', '_'], 
-        ['_', '_', '_', 'Clothing', '_'], 
-        ['O', 'O', 'B-Descriptor', 'O', 'O']
-    ],
-    [
-        ['검은', '얼룩이', '흰', '옷에서', '빠졌다.'], 
-        ['_', '_', '_', '_', '빠지다.v'], 
-        ['_', '_', '_', '_', 'Emptying'], 
-        ['B-Theme', 'I-Theme', 'B-Source', 'I-Source', 'O']
-    ]
-]
-```
-
-
 
 
 
@@ -155,4 +111,3 @@ Younggyun Hahm. `hahmyg@kaist.ac.kr`, `hahmyg@gmail.com`
 
 ## Acknowledgement
 This work was supported by Institute for Information & communications Technology Promotion(IITP) grant funded by the Korea government(MSIT) (2013-0-00109, WiseKB: Big data based self-evolving knowledge base and reasoning platform)
-
