@@ -131,14 +131,15 @@ class targetIdentifier():
         if p:
             lemma = self.lemmatizer.lemmatize(token, p)
             if lemma:
-                for lu in self.targetdic:
-                    lu_pos = lu.split('.')[-1]                    
-                    if p == lu_pos:
-                        candi = self.targetdic[lu]
-                        if lemma in candi:
-                            result = lu
-                        else:
-                            pass
+                if lemma != 'be':
+                    for lu in self.targetdic:
+                        lu_pos = lu.split('.')[-1]                    
+                        if p == lu_pos:
+                            candi = self.targetdic[lu]
+                            if lemma in candi:
+                                result = lu
+                            else:
+                                pass
                     
         return result
     
