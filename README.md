@@ -37,8 +37,8 @@ git clone https://github.com/machinereading/koreanframenet.git
 **Download the pretrained model**
 
 Download two pretrained model files to `{your_model_dir}` (e.g. `/home/model/`). 
-* **English Model (recommended for English):** ([download](https://drive.google.com/open?id=153gLX8lIOY8KxGHGgeopCKGDtntCO9fz))
-* **Multilingual Model (English & Korean):** ([download](https://drive.google.com/open?id=153gLX8lIOY8KxGHGgeopCKGDtntCO9fz))
+* **English Model (recommended for English):** ([download](https://drive.google.com/open?id=1bDUoIniUNUm2I0ztXWo6hitOpLmU9lv4))
+* **Multilingual Model (English & Korean):** ([download](https://drive.google.com/open?id=1CN4PnLJ0fuGzWsqXSpJEhC-_YMmuQfgL))
 
 **Import model (in your python code)**
 (make sure that your code is in a parent folder of frameBERT)
