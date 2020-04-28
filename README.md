@@ -58,6 +58,7 @@ parser = frame_parser.FrameParser(model_path=model_path, language='en')
 text = 'text = 'Hemingway was born on July 21, 1899 in Illinois, and died of suicide at the age of 62.'
 parsed = parser.parser(text, sent_id='1', result_format='graph')
 ```
+Then, your result would be:
 ```
 [('frame:Giving_birth#1', 'frdf:lu', 'born'),
  ('frame:Giving_birth#1', 'frdf:Giving_birth-Child', 'Hemingway'),
