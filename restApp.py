@@ -6,17 +6,19 @@ sys.path.append('../')
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 
-from kaiser import parser
+from frameBERT import frame_parser
 
 app = Flask(__name__)
 api = Api(app)
 
-import jpype
-jpype.attachThreadToJVM()
+# import jpype
+# jpype.attachThreadToJVM()
 
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--model', required=True)
+parser.add_argument('--language', required=False, default='ko')
 parser.add_argument('--port', required=False, default=1106)
 args = parser.parse_args()
 
@@ -25,11 +27,7 @@ args = parser.parse_args()
 
 class WebService(Resource):
     def __init__(self):
-#         model_dir = '/disk_4/resource/models'
-#         model_path = '/home/hahmyg/FrameNet-RE/models/bert_ko_framenet_model.pt'
-#         model_path = '/disk/data/models/bert_ko_framenet_model.pt'
-        model_path = '/home/hahmyg/bert_ko_framenet_model.pt'
-        self.parser = parser.ShallowSemanticParser(model_path=model_path)
+        self.parser = frame_parser.FrameParser(model_path=args.model, masking=True, language=args.language)
     def post(self):
         try:
             req_parser = reqparse.RequestParser()
@@ -56,6 +54,5 @@ class WebService(Resource):
             return {'error':str(e)}
 
 api.add_resource(WebService, '/frameBERT')
-# api.add_resource(FrameNetRE, '/FRDF/')
 app.run(debug=True, host='0.0.0.0', port=args.port)
 
