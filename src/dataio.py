@@ -11,10 +11,10 @@ from keras.preprocessing.sequence import pad_sequences
 from frameBERT.koreanframenet import koreanframenet
 from frameBERT.src import kotimex
 
-from konlpy.tag import Kkma
-kkma = Kkma()
-import jpype
-jpype.attachThreadToJVM()
+# from konlpy.tag import Kkma
+# kkma = Kkma()
+# import jpype
+# jpype.attachThreadToJVM()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -253,6 +253,11 @@ def get_frame_lu(tokens, frames, lus):
     return frame, lu, lu_token
             
 def remove_josa(phrase):
+    from konlpy.tag import Kkma
+    kkma = Kkma()
+    import jpype
+    jpype.attachThreadToJVM()
+    
     tokens = phrase.split(' ')
 
     result = []
@@ -269,7 +274,7 @@ def remove_josa(phrase):
     result = ' '.join(result)
     return result
             
-def frame2rdf(frame_conll, sent_id=False):
+def frame2rdf(frame_conll, sent_id=False, language='ko'):
     triples = []
     for anno in frame_conll:
         tokens, lus, frames, args = anno[0],anno[1],anno[2],anno[3]
@@ -301,7 +306,11 @@ def frame2rdf(frame_conll, sent_id=False):
                         arg_tokens.append(tokens[next_idx])
                         next_idx +=1
                     arg_text = ' '.join(arg_tokens)
-                    arg_text = remove_josa(arg_text)
+                    
+                    if language =='ko':
+                        arg_text = remove_josa(arg_text)
+                    else:
+                        pass
                     fe = fe_tag
 
                     # string to xsd

@@ -277,7 +277,7 @@ class FrameParser():
             result = textae
         elif result_format == 'graph':
             if conll_result:
-                frdf = dataio.frame2rdf(conll_result, sent_id=sent_id)
+                frdf = dataio.frame2rdf(conll_result, sent_id=sent_id, language=self.language)
             else:
                 frdf = []
             result = frdf
