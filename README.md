@@ -13,7 +13,7 @@ For an example sentence, "The center's director pledged a thorough review of saf
 
 ## prerequisite
 * `python 3`
-* `pytorch` ([Link](https://pytorch.org/)
+* `pytorch` ([Link](https://pytorch.org/))
 * `transformers` ([Link](https://github.com/huggingface/transformers/tree/9a0a8c1c6f4f2f0c80ff07d36713a3ada785eec5#installation))
 * `Korean FrameNet` ([Link](https://github.com/machinereading/koreanframenet))
 * `keras` ([Link](https://keras.io/#installation))
