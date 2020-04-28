@@ -79,7 +79,7 @@ parser = frame_parser.FrameParser(model_path=model_path, language='ko')
 text = '헤밍웨이는 1899년 7월 21일 미국 일리노이에서 태어났고 62세에 자살로 사망했다.'
 parsed = parser.parser(text, sent_id='1', result_format='all')
 ```
-<img src="./images/example_ko.png" width="80%" height="80%">
+<img src="./images/example_ko.png" width="60%" height="60%">
 
 
 
