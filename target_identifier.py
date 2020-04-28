@@ -7,7 +7,6 @@
 import os
 import json
 from collections import Counter
-import jpype
 import sys
 sys.path.append('../')
 
@@ -44,7 +43,9 @@ class targetIdentifier():
             self.targetdic = targetdic
     
     def targetize(self, word):
+        import jpype
         jpype.attachThreadToJVM()
+        
         target_candis = []
         morps = self.kkma.pos(word)
         v = False
