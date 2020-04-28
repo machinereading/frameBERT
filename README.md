@@ -25,7 +25,8 @@ For `nltk`, please download following packages: `nltk.download('averaged_percept
 **Install**
 
 Install `frameBERT`, and `Korean FrameNet`.
-**Note: Korean FrameNet would be not mandatory package in next update**
+
+(***Note: Korean FrameNet would be not mandatory package in the next update***)
 ```
 git clone https://github.com/machinereading/frameBERT.git
 cd frameBERT
