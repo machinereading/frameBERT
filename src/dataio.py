@@ -25,6 +25,30 @@ except:
     dir_path = '.'
     
 dir_path = dir_path+'/..'
+
+def fe2arg(data):
+    result = []
+    for i in data:
+        tokens, preds, senses, args = i[0], i[1], i[2], i[3]
+        new_args = []
+        for arg in args:
+            if '-' in arg:
+                bio = arg.split('-')[0]
+                new_arg = bio+'-'+'ARG'
+            else:
+                new_arg = arg
+            new_args.append(new_arg)
+            
+        sent = []
+        sent.append(tokens)
+        sent.append(preds)
+        sent.append(senses)
+        sent.append(new_args)
+        
+        result.append(sent)
+        
+    return result
+                
     
 def conll2tagseq(data):
     tokens, preds, senses, args = [],[],[],[]
@@ -51,10 +75,10 @@ def conll2tagseq(data):
             
     return result
     
-def load_data(srl='framenet', language='ko', fnversion=1.1, path=False, exem=True):
-    if srl == 'framenet':
+def load_data(srl='framenet', language='ko', fnversion=1.1, path=False, exem=False, info=True):
+    if 'framenet' in srl:
         if language == 'ko':
-            kfn = koreanframenet.interface(version=fnversion)
+            kfn = koreanframenet.interface(version=fnversion, info=info)
             trn_d, dev_d, tst_d = kfn.load_data()
         else:
             if path == False:
@@ -138,10 +162,10 @@ def load_data(srl='framenet', language='ko', fnversion=1.1, path=False, exem=Tru
         trn = trn_d
     
         
-    print('# of instances in trn:', len(trn))
-    print('# of instances in dev:', len(dev))
-    print('# of instances in tst:', len(tst))
-    print('data example:', trn[0])
+#     print('# of instances in trn:', len(trn))
+#     print('# of instances in dev:', len(dev))
+#     print('# of instances in tst:', len(tst))
+#     print('data example:', trn[0])
     
     return trn, dev, tst
                 
@@ -215,14 +239,18 @@ def preprocessor(input_data):
     return result
              
     
-def get_frame_lu(frames, lus):
+def get_frame_lu(tokens, frames, lus):
+    lu_token_list = []
     frame = False
     for i in range(len(frames)):
         f = frames[i]
         if f != '_':
             frame = f
             lu = lus[i]
-    return frame, lu
+            lu_token_list.append(tokens[i])            
+    lu_token = ' '.join(lu_token_list)
+    
+    return frame, lu, lu_token
             
 def remove_josa(phrase):
     tokens = phrase.split(' ')
@@ -245,13 +273,18 @@ def frame2rdf(frame_conll, sent_id=False):
     triples = []
     for anno in frame_conll:
         tokens, lus, frames, args = anno[0],anno[1],anno[2],anno[3]
-        frame, lu = get_frame_lu(frames, lus)
+        frame, lu, lu_token = get_frame_lu(tokens, frames, lus)
         if frame:
             if sent_id:
-                triple = ('frame:'+frame+'#'+str(sent_id), 'frdf:lu', lu)
+                triple = ('frame:'+frame+'#'+str(sent_id), 'frdf:lu', lu_token)
+                triples.append(triple)
+#                 triple = ('frame:'+frame+'#'+str(sent_id), 'frdf:target', lu_token)
+#                 triples.append(triple)
             else:
-                triple = ('frame:'+frame, 'frdf:lu', lu)
-            triples.append(triple)
+                triple = ('frame:'+frame, 'frdf:lu', lu_token)
+                triples.append(triple)
+#                 triple = ('frame:'+frame, 'frdf:target', lu_token)
+#                 triples.append(triple)
 
         if frame:
             sbj = False

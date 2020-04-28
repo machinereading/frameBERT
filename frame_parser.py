@@ -15,7 +15,7 @@ from frameBERT.src import utils
 from frameBERT.src import dataio
 from frameBERT import target_identifier
 from frameBERT import inference
-from frameBERT.src.modeling import BertForJointShallowSemanticParsing
+from frameBERT.src.modeling import *
 from frameBERT.koreanframenet.src import conll2textae
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 import torch
@@ -24,10 +24,10 @@ from torch.optim import Adam
 from tqdm import tqdm, trange
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 n_gpu = torch.cuda.device_count()
-if device != "cpu":
-    torch.cuda.set_device(device)
+# if device != "cpu":
+#     torch.cuda.set_device(device)
 
 print('\n###DEVICE:', device)
 
@@ -38,7 +38,7 @@ print('\n###DEVICE:', device)
 class FrameParser():
     def __init__(self, fnversion=1.1, language='ko',masking=True, srl='framenet', 
                  model_path=False, gold_pred=False, viterbi=False, tgt=True, 
-                 pretrained='bert-base-multilingual-cased'):
+                 pretrained='bert-base-multilingual-cased', info=True):
         self.fnversion = fnversion
         self.language = language
         self.masking = masking
@@ -49,25 +49,26 @@ class FrameParser():
         self.tgt = tgt #using <tgt> and </tgt> as a special token
         
         if self.masking==True:
-            self.targetid = target_identifier.targetIdentifier()
+            self.targetid = target_identifier.targetIdentifier(language=self.language)
         else:
-            self.targetid = target_identifier.targetIdentifier(only_lu=False)
+            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=False)
             
         if self.srl == 'propbank-dp':
             self.viterbi = False
             self.masking = False
         
-        print('srl model:', self.srl)
-        print('language:', self.language)
-        print('version:', self.fnversion)
-        print('using viterbi:', self.viterbi)
-        print('using masking:', self.masking)
-        print('pretrained BERT:', self.pretrained)
-        print('using TGT special token:', self.tgt)
+        if info:
+            print('srl model:', self.srl)
+            print('language:', self.language)
+            print('version:', self.fnversion)
+            print('using viterbi:', self.viterbi)
+            print('using masking:', self.masking)
+            print('pretrained BERT:', self.pretrained)
+            print('using TGT special token:', self.tgt)
         
         self.bert_io = utils.for_BERT(mode='predict', srl=self.srl, language=self.language, 
                               masking=self.masking, fnversion=self.fnversion,
-                              pretrained=self.pretrained)  
+                              pretrained=self.pretrained, info=info)  
         
         #load model
         if model_path:
@@ -76,18 +77,36 @@ class FrameParser():
             print('model_path={your_model_dir}')
 #         self.model = torch.load(model_path, map_location=device)
 
-
-        self.model = BertForJointShallowSemanticParsing.from_pretrained(self.model_path, 
-                                                                   num_senses = len(self.bert_io.sense2idx), 
-                                                                   num_args = len(self.bert_io.bio_arg2idx),
-                                                                   lufrmap=self.bert_io.lufrmap, masking=self.masking,
-                                                                   frargmap = self.bert_io.bio_frargmap)
+        if self.srl == 'framenet':
+            self.model = BertForJointShallowSemanticParsing.from_pretrained(self.model_path, 
+                                                                       num_senses = len(self.bert_io.sense2idx), 
+                                                                       num_args = len(self.bert_io.bio_arg2idx),
+                                                                       lufrmap=self.bert_io.lufrmap, masking=self.masking,
+                                                                       frargmap = self.bert_io.bio_frargmap)
+        elif self.srl == 'framenet-argid':
+            self.model = ArgumentBoundaryIdentifier.from_pretrained(self.model_path, 
+                                                                    num_senses = len(self.bert_io.sense2idx), 
+                                                                    num_args = len(self.bert_io.bio_argument2idx),
+                                                                    lufrmap=self.bert_io.lufrmap, 
+                                                                    frargmap = self.bert_io.bio_frargmap)
+        else:
+            self.model = BertForJointShallowSemanticParsing.from_pretrained(self.model_path, 
+                                                                       num_senses = len(self.bert_io.sense2idx), 
+                                                                       num_args = len(self.bert_io.bio_arg2idx),
+                                                                       lufrmap=self.bert_io.lufrmap, masking=self.masking,
+                                                                       frargmap = self.bert_io.bio_frargmap)
+        
+            
+            
+            
         self.model.to(device)
-        print('...loaded model path:', self.model_path)
+        if info:
+            print('...loaded model path:', self.model_path)
 #         self.model = BertForJointShallowSemanticParsing
         self.model.eval()
-        print(self.model_path)
-        print('...model is loaded')
+        if info:
+            print(self.model_path)
+            print('...model is loaded')
         
         # trainsition parameter for vitervi decoding
         if self.srl != 'propbank-dp':
@@ -120,7 +139,7 @@ class FrameParser():
             
             pred_senses, pred_args = [],[]            
             for batch in dataloader:
-                torch.cuda.set_device(device)
+#                 torch.cuda.set_device(device)
                 batch = tuple(t.to(device) for t in batch)
                 b_input_ids, b_orig_tok_to_maps, b_lus, b_token_type_ids, b_masks = batch
                 
@@ -130,6 +149,13 @@ class FrameParser():
                     sense_logits, arg_logits = self.model(b_input_ids, lus=b_lus, 
                                                           token_type_ids=b_token_type_ids, attention_mask=b_masks)
                 
+
+                lufr_masks = utils.get_masks(b_lus, 
+                                             self.bert_io.lufrmap, 
+                                             num_label=len(self.bert_io.sense2idx), 
+                                             masking=self.masking).to(device)
+
+                
                 b_input_ids_np = b_input_ids.detach().cpu().numpy()
                 arg_logits_np = arg_logits.detach().cpu().numpy()
                     
@@ -138,16 +164,21 @@ class FrameParser():
                 for b_idx in range(len(b_orig_tok_to_maps)):
                     orig_tok_to_map = b_orig_tok_to_maps[b_idx]
                     bert_token = self.bert_io.tokenizer.convert_ids_to_tokens(b_input_ids_np[b_idx])
-                    tgt_idx = utils.get_tgt_idx(bert_token, tgt=self.tgt)                                      
+                    tgt_idx = utils.get_tgt_idx(bert_token, tgt=self.tgt)
                     
                     input_id, sense_logit, arg_logit = [],[],[]
 
                     for idx in orig_tok_to_map:                        
                         if idx != -1:
                             if idx not in tgt_idx:
-                                input_id.append(b_input_ids_np[b_idx][idx])
-                                arg_logits_np[b_idx][idx][1] = np.NINF
-                                arg_logit.append(arg_logits_np[b_idx][idx])
+                                try:
+                                    input_id.append(b_input_ids_np[b_idx][idx])
+                                    arg_logits_np[b_idx][idx][1] = np.NINF
+                                    arg_logit.append(arg_logits_np[b_idx][idx])
+                                except KeyboardInterrupt:
+                                    raise
+                                except:
+                                    pass
                                 
                     b_input_ids.append(input_id)
                     arg_logits.append(arg_logit)
@@ -160,7 +191,24 @@ class FrameParser():
                     sense_logit = sense_logits[b_idx]
                     arg_logit = arg_logits[b_idx]
                     
-                    pred_sense, sense_score = utils.logit2label(sense_logit)
+                    lufr_mask = lufr_masks[b_idx]                        
+                    masked_sense_logit = utils.masking_logit(sense_logit, lufr_mask)
+                    pred_sense, sense_score = utils.logit2label(masked_sense_logit)
+                    
+                    if self.srl == 'framenet':
+                        arg_logit_np = arg_logit.detach().cpu().numpy()
+                        arg_logit = []
+                        frarg_mask = utils.get_masks([pred_sense], 
+                                                     self.bert_io.bio_frargmap, 
+                                                     num_label=len(self.bert_io.bio_arg2idx), 
+                                                     masking=True).to(device)[0]
+                        for logit in arg_logit_np:
+                            masked_logit = utils.masking_logit(logit, frarg_mask)
+                            arg_logit.append(np.array(masked_logit))
+                        arg_logit = torch.Tensor(arg_logit).to(device)
+                    else:
+                        pass
+                    
                     pred_arg = []
                     for logit in arg_logit:
                         label, score = utils.logit2label(logit)
@@ -172,7 +220,12 @@ class FrameParser():
 
 
             pred_sense_tags = [self.bert_io.idx2sense[p_i] for p in pred_senses for p_i in p]
-            pred_arg_tags = [[self.bert_io.idx2bio_arg[p_i] for p_i in p] for p in pred_args]
+            if self.srl == 'framenet':
+                pred_arg_tags = [[self.bert_io.idx2bio_arg[p_i] for p_i in p] for p in pred_args]
+            elif self.srl == 'framenet-argid':
+                pred_arg_tags = [[self.bert_io.idx2bio_argument[p_i] for p_i in p] for p in pred_args]
+            else:
+                pred_arg_tags = [[self.bert_io.idx2bio_arg[p_i] for p_i in p] for p in pred_args]
 
             conll_result = []
 

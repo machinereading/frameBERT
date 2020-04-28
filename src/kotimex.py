@@ -22,7 +22,7 @@ def basic_time_normalizer(text):
         month = m_search.group('MONTH')
         check_month = True
     else:
-        month = '0'
+        month = '00'
     
     # find day
     regex = re.compile("(?P<DAY>\d+)일")
@@ -31,11 +31,13 @@ def basic_time_normalizer(text):
         day = d_search.group('DAY')
         check_day = True
     else:
-        day = '0'
+        day = '00'
     
     if check_year or check_month or check_day:
         if len(year) == 4 and len(month) <= 2 and len(day) <=2:
             time_rep = year+'-'+month+'-'+day
+        else:
+            time_rep = text
     else:
         time_rep = text    
     return time_rep    

@@ -10,7 +10,7 @@ from torch import nn
 sys.path.insert(0,'../')
 sys.path.insert(0,'../../')
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 n_gpu = torch.cuda.device_count()
 if device != "cpu":
     torch.cuda.set_device(0)
@@ -26,7 +26,7 @@ except:
 dir_path = dir_path+'/..'
 
 class for_BERT():
-    def __init__(self, srl='framenet', language='ko', fnversion=1.1, mode='train', masking=True, pretrained='bert-base-multilingual-cased'):
+    def __init__(self, srl='framenet', language='ko', fnversion=1.1, mode='train', masking=True, pretrained='bert-base-multilingual-cased', info=True):
         self.mode = mode
         self.masking = masking
         self.srl = srl
@@ -75,10 +75,10 @@ class for_BERT():
         with open(dir_path+'/koreanframenet/resource/info/fn1.7_bio_fe2idx.json','r') as f:
             self.bio_arg2idx = json.load(f)
         self.idx2bio_arg = dict(zip(self.bio_arg2idx.values(),self.bio_arg2idx.keys()))
-        
-        
-        with open(dir_path+'/koreanframenet/resource/info/fn1.7_bio_fe2idx.json','r') as f:
-            self.bio_arg2idx = json.load(f)
+            
+        with open(dir_path+'/data/bio_arg2idx.json','r') as f:
+            self.bio_argument2idx = json.load(f)
+        self.idx2bio_argument = dict(zip(self.bio_argument2idx.values(),self.bio_argument2idx.keys()))
             
         if language == 'en':
             frargmap_path = dir_path+'/koreanframenet/resource/info/fn1.7_bio_frargmap.json'
@@ -88,13 +88,15 @@ class for_BERT():
         with open(frargmap_path,'r') as f:
             self.bio_frargmap = json.load(f)
             
-        print('used dictionary:')
-        print('\t', data_path+'lu2idx.json')
-        print('\t', data_path+'lufrmap.json')
-        print('\t', frargmap_path)
+        if info:
+            print('used dictionary:')
+            print('\t', data_path+'lu2idx.json')
+            print('\t', data_path+'lufrmap.json')
+            print('\t', frargmap_path)
             
         self.idx2sense = dict(zip(self.sense2idx.values(),self.sense2idx.keys()))
         self.idx2arg = dict(zip(self.arg2idx.values(),self.arg2idx.keys()))
+        
         
     def idx2tag(self, predictions, model='senseid'):
         if model == 'senseid':
@@ -164,7 +166,11 @@ class for_BERT():
             if self.srl == 'propbank-dp':
                 arg_ids = pad_sequences([[self.arg2idx.get(ar) for ar in arg] for arg in args],
                                         maxlen=MAX_LEN, value=self.arg2idx["X"], padding="post",
-                                        dtype="long", truncating="post")                
+                                        dtype="long", truncating="post")
+            elif self.srl == 'framenet-argid':
+                arg_ids = pad_sequences([[self.bio_argument2idx.get(ar) for ar in arg] for arg in args],
+                                        maxlen=MAX_LEN, value=self.bio_argument2idx["X"], padding="post",
+                                        dtype="long", truncating="post")
             else:
                 arg_ids = pad_sequences([[self.bio_arg2idx.get(ar) for ar in arg] for arg in args],
                                         maxlen=MAX_LEN, value=self.bio_arg2idx["X"], padding="post",

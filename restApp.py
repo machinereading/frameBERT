@@ -14,6 +14,12 @@ api = Api(app)
 import jpype
 jpype.attachThreadToJVM()
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--port', required=False, default=1106)
+args = parser.parse_args()
+
 # In[1]:
 
 
@@ -51,5 +57,5 @@ class WebService(Resource):
 
 api.add_resource(WebService, '/frameBERT')
 # api.add_resource(FrameNetRE, '/FRDF/')
-app.run(debug=True, host='0.0.0.0', port=1106)
+app.run(debug=True, host='0.0.0.0', port=args.port)
 
