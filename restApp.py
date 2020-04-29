@@ -24,10 +24,11 @@ args = parser.parse_args()
 
 # In[1]:
 
+f_parser = frame_parser.FrameParser(model_path=args.model, masking=True, language=args.language)
 
 class WebService(Resource):
     def __init__(self):
-        self.parser = frame_parser.FrameParser(model_path=args.model, masking=True, language=args.language)
+#         self.parser = frame_parser.FrameParser(model_path=args.model, masking=True, language=args.language)
     def post(self):
         try:
             req_parser = reqparse.RequestParser()
@@ -45,7 +46,7 @@ class WebService(Resource):
             else:
                 result_format = args['result_format']
                 
-            result = self.parser.parser(args['text'], sent_id=sent_id, result_format=result_format)
+            result = f_parser.parser(args['text'], sent_id=sent_id, result_format=result_format)
 
             return result, 200
         except KeyboardInterrupt:
