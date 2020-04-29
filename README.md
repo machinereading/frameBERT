@@ -55,7 +55,7 @@ parser = frame_parser.FrameParser(model_path=model_path, language='en')
 
 **3. Parse the input text**
 ```
-text = 'text = 'Hemingway was born on July 21, 1899 in Illinois, and died of suicide at the age of 62.'
+text = 'Hemingway was born on July 21, 1899 in Illinois, and died of suicide at the age of 62.'
 parsed = parser.parser(text, sent_id='1', result_format='graph')
 ```
 Then, your result would be:
@@ -96,7 +96,7 @@ The result consits of following three parts:
 Or, you can get all result in json by `result_format='all'`
 
 
-**result**
+## Result Format
 
 ***triple format (as a Graph)***
 The result is a list of triples.
@@ -125,6 +125,30 @@ The result is a list, which consists of multiple Frame-Semantic structures. Each
     ...
 ]
 ```
+
+
+## Running REST API service
+
+By running the code `restApp.py`, you can make a standalone REST service at your own server.
+
+### How to run REST API service
+```
+python restApp.py --port {port number} --language {en|ko} --model {model path}
+```
+**Example**
+```
+python restApp.py --port 8888 --language en --model ./models/en
+```
+
+### Input format
+```
+# JSON format
+{
+ "text": "Hemingway was born on July 21, 1899 in Illinois, and died of suicide at the age of 62.",
+ "result_format": "all"
+}
+```
+ 
 
 
 ## Licenses
