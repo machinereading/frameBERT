@@ -4,7 +4,7 @@
 The frameBERT is available for both of [English FrameNet 1.7](https://framenet.icsi.berkeley.edu/fndrupal/) and [Korean FrameNet 1.1](https://github.com/machinereading/koreanframenet).
 
 ## About
-The frameBERT is a frame-semantic parser to understand the meaning of texts in terms of [FrameNet](https://framenet.icsi.berkeley.edu/fndrupal/). 
+The frameBERT is a `BERT`-based frame-semantic parser to understand the meaning of texts in terms of [FrameNet](https://framenet.icsi.berkeley.edu/fndrupal/).
 
 **frame** (frame semantics) is a schematic representation of a situation or an event. 
 For an example sentence, "The center's director pledged a thorough review of safety precedures", frameBERT identifies several frames such as `Being_born` and `Death` for lexical units (e.g., `center.n`, `director.n` and `pledge.v`).
