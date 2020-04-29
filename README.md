@@ -13,7 +13,7 @@ For an example sentence, "The center's director pledged a thorough review of saf
 
 ## prerequisite
 * `python 3`
-* `pytorch` ([Link](https://pytorch.org/)
+* `pytorch` ([Link](https://pytorch.org/))
 * `transformers` ([Link](https://github.com/huggingface/transformers/tree/9a0a8c1c6f4f2f0c80ff07d36713a3ada785eec5#installation))
 * `Korean FrameNet` ([Link](https://github.com/machinereading/koreanframenet))
 * `keras` ([Link](https://keras.io/#installation))
@@ -25,7 +25,8 @@ For `nltk`, please download following packages: `nltk.download('averaged_percept
 **Install**
 
 Install `frameBERT`, and `Korean FrameNet`.
-**Note: Korean FrameNet would be not mandatory package in next update**
+
+(***Note: Korean FrameNet would be not mandatory package in the next update***)
 ```
 git clone https://github.com/machinereading/frameBERT.git
 cd frameBERT
@@ -34,13 +35,13 @@ git clone https://github.com/machinereading/koreanframenet.git
 
 ### How to use a frame-semantic parser for a language (English or Korean)
 
-**Download the pretrained model**
+**1. Download the pretrained model**
 
 Download two pretrained model files to `{your_model_dir}` (e.g. `/home/model/`). 
 * **English Model (recommended for English):** ([download](https://drive.google.com/open?id=1bDUoIniUNUm2I0ztXWo6hitOpLmU9lv4))
 * **Multilingual Model (English & Korean):** ([download](https://drive.google.com/open?id=1CN4PnLJ0fuGzWsqXSpJEhC-_YMmuQfgL))
 
-**Import model (in your python code)**
+**2. Import model (in your python code)**
 (make sure that your code is in a parent folder of frameBERT)
 ```
 from frameBERT import frame_parser
@@ -52,11 +53,12 @@ parser = frame_parser.FrameParser(model_path=model_path, language='en')
 
 
 
-**Parse the input text**
+**3. Parse the input text**
 ```
 text = 'text = 'Hemingway was born on July 21, 1899 in Illinois, and died of suicide at the age of 62.'
 parsed = parser.parser(text, sent_id='1', result_format='graph')
 ```
+Then, your result would be:
 ```
 [('frame:Giving_birth#1', 'frdf:lu', 'born'),
  ('frame:Giving_birth#1', 'frdf:Giving_birth-Child', 'Hemingway'),
@@ -79,7 +81,7 @@ parser = frame_parser.FrameParser(model_path=model_path, language='ko')
 text = '헤밍웨이는 1899년 7월 21일 미국 일리노이에서 태어났고 62세에 자살로 사망했다.'
 parsed = parser.parser(text, sent_id='1', result_format='all')
 ```
-<img src="./images/example_ko.png" width="80%" height="80%">
+<img src="./images/example_ko.png" width="60%" height="60%">
 
 
 
@@ -121,39 +123,6 @@ The result is a list, which consists of multiple Frame-Semantic structures. Each
     ], 
     [
     ...
-]
-```
-
-
-
-
-
-
-[
-    [
-        ['헤밍웨이는', '1899년', '7월', '21일', '미국', '일리노이에서', '태어났고,', '62세에', '자살로', '사망했다.'], 
-        ['_', '_', '_', '_', '미국.n', '_', '_', '_', '_', '_'], 
-        ['_', '_', '_', '_', 'Origin', '_', '_', '_', '_', '_'], 
-        ['O', 'O', 'O', 'O', 'O', 'B-Entity', 'O', 'O', 'O', 'O']
-    ], 
-    [
-        ['헤밍웨이는', '1899년', '7월', '21일', '미국', '일리노이에서', '태어났고,', '62세에', '자살로', '사망했다.'],
-        ['_', '_', '_', '_', '_', '_', '태어나다.v', '_', '_', '_'], 
-        ['_', '_', '_', '_', '_', '_', 'Being_born', '_', '_', '_'], 
-        ['B-Child', 'B-Time', 'I-Time', 'I-Time', 'B-Place', 'I-Place', 'O', 'O', 'O', 'O']
-    ], 
-    [
-        ['헤밍웨이는', '1899년', '7월', '21일', '미국', '일리노이에서', '태어났고,', '62세에', '자살로', '사망했다.'], 
-        ['_', '_', '_', '_', '_', '_', '_', '_', '자살.n', '_'], 
-        ['_', '_', '_', '_', '_', '_', '_', '_', 'Killing', '_'], 
-        ['B-Victim', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']
-    ],
-    [
-        ['헤밍웨이는', '1899년', '7월', '21일', '미국', '일리노이에서', '태어났고,', '62세에', '자살로', '사망했다.'], 
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '사망.n'], 
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', 'Death'], 
-        ['B-Protagonist', 'O', 'O', 'O', 'O', 'O', 'O', 'B-Time', 'B-Manner', 'O']
-    ]
 ]
 ```
 
