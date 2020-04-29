@@ -139,6 +139,7 @@ python restApp.py --port {port number} --language {en|ko} --model {model path}
 ```
 python restApp.py --port 8888 --language en --model ./models/en
 ```
+Then, you can use it with the `POST` method to the url `XXX.XXX.XXX.XXX:8888/frameBERT`. `XXX.XXX.XXX.XXX` is your IP address. 
 
 ### Input format
 ```
