@@ -5,10 +5,12 @@ sys.path.append('../')
 
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
+from flask_cors import CORS
 
 from frameBERT import frame_parser
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 # import jpype
@@ -28,6 +30,7 @@ f_parser = frame_parser.FrameParser(model_path=args.model, masking=True, languag
 
 class WebService(Resource):
     def __init__(self):
+        pass
 #         self.parser = frame_parser.FrameParser(model_path=args.model, masking=True, language=args.language)
     def post(self):
         try:

@@ -21,10 +21,11 @@ except:
     target_dir = '.'
 
 class targetIdentifier():
-    def __init__(self, srl='framenet', language='ko', only_lu=True):
+    def __init__(self, srl='framenet', language='ko', only_lu=True, masking=True):
         self.srl = srl
         self.language = language
         self.only_lu = only_lu
+        self.masking = masking
         
         if self.language == 'ko':
             from konlpy.tag import Kkma
@@ -102,9 +103,12 @@ class targetIdentifier():
             for lu in self.targetdic:
                 if target_candi in self.targetdic[lu]:
                     lu_pos = lu.split('.')[-1]
-                    if word_pos == lu_pos:
+                    if self.only_lu==True:
+                        if word_pos == lu_pos:
+                            lu_candis.append(lu)
+                    else:
                         lu_candis.append(lu)
-            if self.only_lu==False:
+            if self.masking==False:
                 lu_candis.append(target_candi+'.'+word_pos)
         common = Counter(lu_candis).most_common()
         if len(common) > 0:
@@ -131,15 +135,25 @@ class targetIdentifier():
         if p:
             lemma = self.lemmatizer.lemmatize(token, p)
             if lemma:
-                if lemma != 'be':
+#                 if lemma != 'be':
+                if self.masking == True:
                     for lu in self.targetdic:
                         lu_pos = lu.split('.')[-1]                    
-                        if p == lu_pos:
+                        if self.only_lu == True:
+                            if p == lu_pos:                                                
+                                candi = self.targetdic[lu]
+                                if lemma in candi:
+                                    result = lu
+                                else:
+                                    pass
+                        else:
                             candi = self.targetdic[lu]
                             if lemma in candi:
                                 result = lu
                             else:
                                 pass
+                else:
+                    result = lemma+'.'+pos
                     
         return result
     

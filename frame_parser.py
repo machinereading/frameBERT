@@ -36,9 +36,9 @@ print('\n###DEVICE:', device)
 
 
 class FrameParser():
-    def __init__(self, fnversion=1.1, language='ko',masking=True, srl='framenet', 
+    def __init__(self, fnversion=1.2, language='ko',masking=True, srl='framenet', 
                  model_path=False, gold_pred=False, viterbi=False, tgt=True, 
-                 pretrained='bert-base-multilingual-cased', info=True):
+                 pretrained='bert-base-multilingual-cased', info=True, only_lu=True):
         self.fnversion = fnversion
         self.language = language
         self.masking = masking
@@ -47,11 +47,12 @@ class FrameParser():
         self.viterbi = viterbi
         self.pretrained = pretrained
         self.tgt = tgt #using <tgt> and </tgt> as a special token
+        self.only_lu = only_lu
         
         if self.masking==True:
-            self.targetid = target_identifier.targetIdentifier(language=self.language)
+            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=self.only_lu)
         else:
-            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=False)
+            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=False, masking=self.masking)
             
         if self.srl == 'propbank-dp':
             self.viterbi = False

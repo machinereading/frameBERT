@@ -11,11 +11,6 @@ from keras.preprocessing.sequence import pad_sequences
 from frameBERT.koreanframenet import koreanframenet
 from frameBERT.src import kotimex
 
-# from konlpy.tag import Kkma
-# kkma = Kkma()
-# import jpype
-# jpype.attachThreadToJVM()
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 import os
@@ -47,8 +42,7 @@ def fe2arg(data):
         
         result.append(sent)
         
-    return result
-                
+    return result                
     
 def conll2tagseq(data):
     tokens, preds, senses, args = [],[],[],[]
@@ -75,7 +69,7 @@ def conll2tagseq(data):
             
     return result
     
-def load_data(srl='framenet', language='ko', fnversion=1.1, path=False, exem=False, info=True):
+def load_data(srl='framenet', language='ko', fnversion=1.2, path=False, exem=False, info=True):
     if 'framenet' in srl:
         if language == 'ko':
             kfn = koreanframenet.interface(version=fnversion, info=info)
@@ -276,17 +270,18 @@ def remove_josa(phrase):
             
 def frame2rdf(frame_conll, sent_id=False, language='ko'):
     triples = []
+    n = 0
     for anno in frame_conll:
         tokens, lus, frames, args = anno[0],anno[1],anno[2],anno[3]
         frame, lu, lu_token = get_frame_lu(tokens, frames, lus)
         if frame:
-            if sent_id:
-                triple = ('frame:'+frame+'#'+str(sent_id), 'frdf:lu', lu_token)
+            if type(sent_id) != bool:
+                triple = ('frame'+'#'+str(sent_id)+'-'+str(n)+':'+frame, 'lu', lu_token)
                 triples.append(triple)
 #                 triple = ('frame:'+frame+'#'+str(sent_id), 'frdf:target', lu_token)
 #                 triples.append(triple)
             else:
-                triple = ('frame:'+frame, 'frdf:lu', lu_token)
+                triple = ('frame'+'#'+str(n)+':'+frame, 'lu', lu_token)
                 triples.append(triple)
 #                 triple = ('frame:'+frame, 'frdf:target', lu_token)
 #                 triples.append(triple)
@@ -320,7 +315,8 @@ def frame2rdf(frame_conll, sent_id=False, language='ko'):
                         pass
 #                         arg_text = '\"'+arg_text+'\"'+'^^xsd:string'
 
-                    rel = 'frdf:'+frame+'-'+fe
+#                     rel = 'frdf:'+frame+'-'+fe
+                    rel = 'fe:'+fe
 
                     if rel == 'S':
                         pass
@@ -333,12 +329,13 @@ def frame2rdf(frame_conll, sent_id=False, language='ko'):
                 if sbj:
                     s = sbj
                 else:
-                    if sent_id:
-                        s = 'frame:'+frame+'#'+str(sent_id)
+                    if type(sent_id) != bool:
+                        s = 'frame'+'#'+str(sent_id)+'-'+str(n)+':'+frame
                     else:
-                        s = 'frame:'+frame
+                        s = 'frame'+'#'+str(n)+':'+frame
                 triple = (s, p, o)
                 triples.append(triple)
+        n +=1
     return triples
 
 

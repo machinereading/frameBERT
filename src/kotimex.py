@@ -42,17 +42,7 @@ def basic_time_normalizer(text):
         time_rep = text    
     return time_rep    
 
-
-# In[59]:
-
-
 def time2xsd(text):
     time_rep = basic_time_normalizer(text)
     
     return time_rep
-    
-#     if regex.search(time_rep):
-#         xsd = '\"'+time_rep+'\"'+'^^xsd:date'
-#     else:
-#         xsd = '\"'+time_rep+'\"'+'^^xsd:string'
-#     return xsd

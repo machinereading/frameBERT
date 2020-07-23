@@ -26,7 +26,7 @@ except:
 dir_path = dir_path+'/..'
 
 class for_BERT():
-    def __init__(self, srl='framenet', language='ko', fnversion=1.1, mode='train', masking=True, pretrained='bert-base-multilingual-cased', info=True):
+    def __init__(self, srl='framenet', language='ko', fnversion=1.2, mode='train', masking=True, pretrained='bert-base-multilingual-cased', info=True):
         self.mode = mode
         self.masking = masking
         self.srl = srl
