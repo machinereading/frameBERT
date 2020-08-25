@@ -232,6 +232,50 @@ def preprocessor(input_data):
         result.append(data)
     return result
              
+def lu2target(lus):
+    target_idx = []
+    for i in range(len(lus)):
+        lu = lus[i]
+        if lu != '_':
+            target_idx.append(i)
+    
+    return target_idx
+
+def target_idx2target(tokens, target_idx):
+    target_tokens = []
+    for i in range(len(tokens)):
+        token = tokens[i]
+        if i in target_idx:
+            target_tokens.append(token)
+    target = ' '.join(target_tokens)
+    
+    return target
+        
+
+def topk(conll_result, sense_candis_list):
+    result = {}
+    
+    if conll_result:
+        targets = []
+        tokens = conll_result[0][0]
+        for i in range(len(conll_result)):
+            lus = conll_result[i][1]
+            target_idx = lu2target(lus)
+            target_word = target_idx2target(tokens, target_idx)
+            sense_candis = sense_candis_list[i]
+            
+            target = {}
+            target['target_index'] = target_idx
+            target['target'] = target_word
+            target['frame_candidates'] = sense_candis
+            targets.append(target)
+
+        result['tokens'] = tokens
+        result['#_of_candidates'] = len(sense_candis)
+        result['targets'] = targets
+        
+    return result
+        
     
 def get_frame_lu(tokens, frames, lus):
     lu_token_list = []

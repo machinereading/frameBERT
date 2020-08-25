@@ -38,7 +38,7 @@ print('\n###DEVICE:', device)
 class FrameParser():
     def __init__(self, fnversion=1.2, language='ko',masking=True, srl='framenet', 
                  model_path=False, gold_pred=False, viterbi=False, tgt=True, 
-                 pretrained='bert-base-multilingual-cased', info=True, only_lu=True):
+                 pretrained='bert-base-multilingual-cased', info=True, only_lu=True, adj=True):
         self.fnversion = fnversion
         self.language = language
         self.masking = masking
@@ -48,11 +48,12 @@ class FrameParser():
         self.pretrained = pretrained
         self.tgt = tgt #using <tgt> and </tgt> as a special token
         self.only_lu = only_lu
+        self.adj = adj
         
         if self.masking==True:
-            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=self.only_lu)
+            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=self.only_lu, adj=self.adj)
         else:
-            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=False, masking=self.masking)
+            self.targetid = target_identifier.targetIdentifier(language=self.language, only_lu=False, masking=self.masking, adj=self.adj)
             
         if self.srl == 'propbank-dp':
             self.viterbi = False
@@ -113,7 +114,7 @@ class FrameParser():
         if self.srl != 'propbank-dp':
             self.transition_param = inference.get_transition_params(self.bert_io.idx2bio_arg.values())
         
-    def parser(self, input_d, sent_id=False, result_format=False):
+    def parser(self, input_d, sent_id=False, result_format=False, frame_candis=5):
         input_conll = dataio.preprocessor(input_d)
         
         #target identification
@@ -138,7 +139,8 @@ class FrameParser():
             bert_inputs = self.bert_io.convert_to_bert_input_JointShallowSemanticParsing(tgt_data)
             dataloader = DataLoader(bert_inputs, sampler=None, batch_size=1)
             
-            pred_senses, pred_args = [],[]            
+            pred_senses, pred_args = [],[]
+            sense_candis_list = []
             for batch in dataloader:
 #                 torch.cuda.set_device(device)
                 batch = tuple(t.to(device) for t in batch)
@@ -196,6 +198,11 @@ class FrameParser():
                     masked_sense_logit = utils.masking_logit(sense_logit, lufr_mask)
                     pred_sense, sense_score = utils.logit2label(masked_sense_logit)
                     
+                    sense_candis = utils.logit2candis(masked_sense_logit, 
+                                                      candis=frame_candis, 
+                                                      idx2label=self.bert_io.idx2sense)
+                    sense_candis_list.append(sense_candis)
+                    
                     if self.srl == 'framenet':
                         arg_logit_np = arg_logit.detach().cpu().numpy()
                         arg_logit = []
@@ -217,8 +224,6 @@ class FrameParser():
                         
                     pred_senses.append([int(pred_sense)])
                     pred_args.append(pred_arg)
-                    
-
 
             pred_sense_tags = [self.bert_io.idx2sense[p_i] for p in pred_senses for p_i in p]
             if self.srl == 'framenet':
@@ -256,8 +261,8 @@ class FrameParser():
                 conll_result.append(conll)
         else:
             conll_result = []
-            
-            
+        
+        result = []
         if result_format == 'all':            
             result = {}
             result['conll'] = conll_result
@@ -265,11 +270,14 @@ class FrameParser():
             if conll_result:
                 textae = conll2textae.get_textae(conll_result)
                 frdf = dataio.frame2rdf(conll_result, sent_id=sent_id)
+                topk = dataio.topk(conll_result, sense_candis_list)
             else:
                 textae = []
                 frdf = []
+                topk = {}
             result['textae'] = textae
             result['graph'] = frdf
+            result['topk'] = topk
         elif result_format == 'textae':
             if conll_result:
                 textae = conll2textae.get_textae(conll_result)
@@ -282,6 +290,12 @@ class FrameParser():
             else:
                 frdf = []
             result = frdf
+        elif result_format == 'topk':
+            if conll_result:
+                topk = dataio.topk(conll_result, sense_candis_list)
+            else:
+                topk = {}
+            result = topk
         else:
             result = conll_result
         

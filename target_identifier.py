@@ -21,11 +21,12 @@ except:
     target_dir = '.'
 
 class targetIdentifier():
-    def __init__(self, srl='framenet', language='ko', only_lu=True, masking=True):
+    def __init__(self, srl='framenet', language='ko', only_lu=True, masking=True, adj=True):
         self.srl = srl
         self.language = language
         self.only_lu = only_lu
         self.masking = masking
+        self.adj = adj
         
         if self.language == 'ko':
             from konlpy.tag import Kkma
@@ -51,8 +52,16 @@ class targetIdentifier():
         morps = self.kkma.pos(word)
         v = False
         for m,p in morps:
-            if p == 'XSV' or p == 'VV' or p == 'VA':
-                v = True    
+            if self.only_lu == True:
+                if p == 'XSV' or p == 'VV' or p == 'VA':
+                    v = True
+            else:
+                if self.adj == True:
+                    if p == 'XSV' or p == 'VV' or p == 'VA':
+                        v = True
+                else:
+                    if p == 'XSV' or p == 'VV':
+                        v = True
         if v:
             for i in range(len(morps)):
                 m,p = morps[i]

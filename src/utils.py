@@ -282,6 +282,30 @@ def logit2label(masked_logit):
     
     return label, score
 
+def logit2candis(masked_logit, candis=1, idx2label=False):
+    sm = nn.Softmax()
+    pred_logits = sm(masked_logit).view(1,-1)
+    
+    logit_len = pred_logits.size()[-1]
+    if candis >= logit_len:
+        candis = logit_len
+    
+    scores, labels = pred_logits.topk(candis)
+    
+    candis = []
+    for i in range(len(scores[0])):
+        score = round(float(scores[0][i]),4)
+        idx = int(labels[0][i])
+        if idx2label:
+            label = idx2label[idx]
+        else:
+            label = idx
+        
+        candi = (label, score)
+        candis.append(candi)
+    
+    return candis
+
 def get_tgt_idx(bert_tokens, tgt=False):
     tgt_idx = []
     try:
