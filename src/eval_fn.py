@@ -44,10 +44,21 @@ def flat_accuracy(preds, labels):
     labels_flat = labels.flatten()
     return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
-with open(dir_path+'/../data/frame_coreFE_list.json','r') as f:
-    frame_coreFE = json.load(f)
+# with open(dir_path+'/../data/frame_coreFE_list.json','r') as f:
+#     frame_coreFE_v17 = json.load(f)
+    
+# with open(dir_path+'/../data/frame_coreFE_list_v1.5.json','r') as f:
+#     frame_coreFE_v15 = json.load(f)
 
-def weighting(gold_frame, pred_frame, gold_args, pred_args):
+def weighting(gold_frame, pred_frame, gold_args, pred_args, fnversion=1.7):
+    
+    if str(fnversion) == '1.5':
+        fname = dir_path+'/../data/frame_coreFE_list_v1.5.json'
+    else:
+        fname = dir_path+'/../data/frame_coreFE_list.json'
+        
+    with open(fname, 'r') as f:
+        frame_coreFE = json.load(f)
     
     weighted_gold_frame, weighted_pred_frame = ['B-'+gold_frame], ['B-'+pred_frame]
     weighted_gold_args, weighted_pred_args = gold_args.copy(), pred_args.copy()
@@ -73,7 +84,7 @@ def weighting(gold_frame, pred_frame, gold_args, pred_args):
     return weighted_gold_frame, weighted_pred_frame, weighted_gold_args, weighted_pred_args
 
 
-def evaluate(gold_data, parsed_data):
+def evaluate(gold_data, parsed_data, fnversion=1.7):
     
     tic()
     
@@ -94,7 +105,7 @@ def evaluate(gold_data, parsed_data):
         gold_frames.append(gold_frame)
         pred_frames.append(pred_frame)
         
-        weighted_gold_frame, weighted_pred_frame, weighted_gold_arg, weighted_pred_arg = weighting(gold_frame, pred_frame, gold_arg, pred_arg)
+        weighted_gold_frame, weighted_pred_frame, weighted_gold_arg, weighted_pred_arg = weighting(gold_frame, pred_frame, gold_arg, pred_arg, fnversion=fnversion)
         
         gold_args.append(weighted_gold_arg)
         pred_args.append(weighted_pred_arg)

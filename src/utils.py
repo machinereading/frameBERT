@@ -45,7 +45,8 @@ class for_BERT():
             self.tokenizer.additional_special_tokens = ['<tgt>', '</tgt>']
 
         if language == 'en':
-            fnversion=1.7
+            if fnversion ==1.2:
+                fnversion=1.7
             data_path = dir_path+'/koreanframenet/resource/info/fn'+str(fnversion)+'_'
         elif language == 'ko':
             data_path = dir_path+'/koreanframenet/resource/info/kfn'+str(fnversion)+'_'
@@ -62,17 +63,28 @@ class for_BERT():
         
         
         # frame, fe dic = FN1.7
-        fname = dir_path+'/koreanframenet/resource/info/fn1.7_frame2idx.json'
-        with open(fname,'r') as f:
+        if language == 'en':
+            frame2idx_fname = data_path+'frame2idx.json'
+        else:
+            frame2idx_fname = dir_path+'/koreanframenet/resource/info/fn1.7_frame2idx.json'
+        with open(frame2idx_fname,'r') as f:
             self.sense2idx = json.load(f)
 
         with open(data_path+'lufrmap.json','r') as f:
             self.lufrmap = json.load(f)
 
-        with open(dir_path+'/koreanframenet/resource/info/fn1.7_fe2idx.json','r') as f:
+        if language == 'en':
+            arg2idx_fname = data_path+'fe2idx.json'
+        else:
+            arg2idx_fname = dir_path+'/koreanframenet/resource/info/fn1.7_fe2idx.json'
+        with open(arg2idx_fname,'r') as f:
             self.arg2idx = json.load(f)
-
-        with open(dir_path+'/koreanframenet/resource/info/fn1.7_bio_fe2idx.json','r') as f:
+            
+        if language == 'en':
+            bio_arg2idx_fname = data_path+'bio_fe2idx.json'
+        else:
+            bio_arg2idx_fname = dir_path+'/koreanframenet/resource/info/fn1.7_bio_fe2idx.json'
+        with open(bio_arg2idx_fname,'r') as f:
             self.bio_arg2idx = json.load(f)
         self.idx2bio_arg = dict(zip(self.bio_arg2idx.values(),self.bio_arg2idx.keys()))
             
@@ -81,10 +93,9 @@ class for_BERT():
         self.idx2bio_argument = dict(zip(self.bio_argument2idx.values(),self.bio_argument2idx.keys()))
             
         if language == 'en':
-            frargmap_path = dir_path+'/koreanframenet/resource/info/fn1.7_bio_frargmap.json'
+            frargmap_path = data_path+'bio_frargmap.json'
         else:
             frargmap_path = dir_path+'/koreanframenet/resource/info/mul_bio_frargmap.json'
-
         with open(frargmap_path,'r') as f:
             self.bio_frargmap = json.load(f)
             

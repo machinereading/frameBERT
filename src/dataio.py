@@ -69,28 +69,30 @@ def conll2tagseq(data):
             
     return result
     
-def load_data(srl='framenet', language='ko', fnversion=1.2, path=False, exem=False, info=True):
+def load_data(srl='framenet', language='ko', fnversion=1.2, path=False, exem=False, info=True, tgt=True):
     if 'framenet' in srl:
         if language == 'ko':
             kfn = koreanframenet.interface(version=fnversion, info=info)
             trn_d, dev_d, tst_d = kfn.load_data()
         else:
+            if fnversion ==1.2:
+                fnversion = 1.7
             if path == False:
-                fn_dir = '/disk/FrameNet/resource/fn1.7/'
+                fn_dir = '/disk/FrameNet/resource/fn'+str(fnversion)+'/'
             else:
                 fn_dir = path
-            with open(fn_dir+'fn1.7.fulltext.train.syntaxnet.conll') as f:
+            with open(fn_dir+'fn'+str(fnversion)+'.fulltext.train.syntaxnet.conll') as f:
                 d = f.readlines()
             trn_d = conll2tagseq(d)
             
             if exem:
-                with open(fn_dir+'fn1.7.exemplar.train.syntaxnet.conll') as f:
+                with open(fn_dir+'fn'+str(fnversion)+'.exemplar.train.syntaxnet.conll') as f:
                     d = f.readlines()
                 exem_d = conll2tagseq(d)
-            with open(fn_dir+'fn1.7.dev.syntaxnet.conll') as f:
+            with open(fn_dir+'fn'+str(fnversion)+'.dev.syntaxnet.conll') as f:
                 d = f.readlines()
             dev_d = conll2tagseq(d)
-            with open(fn_dir+'fn1.7.test.syntaxnet.conll') as f:
+            with open(fn_dir+'fn'+str(fnversion)+'.test.syntaxnet.conll') as f:
                 d = f.readlines()
             tst_d = conll2tagseq(d)
     else:
@@ -116,15 +118,19 @@ def load_data(srl='framenet', language='ko', fnversion=1.2, path=False, exem=Fal
                     d = f.readlines()
                 tst_d = conll2tagseq(d)
                 dev_d = []
-    trn_d = data2tgt_data(trn_d, mode='train')
-    if language == 'en':
-        if exem:
-            exem_d = data2tgt_data(exem_d, mode='train')
-    tst = data2tgt_data(tst_d, mode='train')
-    if dev_d:
-        dev = data2tgt_data(dev_d, mode='train')
+    if tgt == True:
+        trn_d = data2tgt_data(trn_d, mode='train')
+        if language == 'en':
+            if exem:
+                exem_d = data2tgt_data(exem_d, mode='train')
+        tst = data2tgt_data(tst_d, mode='train')
+        if dev_d:
+            dev = data2tgt_data(dev_d, mode='train')
+        else:
+            dev = []
     else:
-        dev = []
+        tst = tst_d
+        dev = dev_d
         
 #     too_long_in_exem = [35285, 35286, 58002, 77448, 77993, 82010, 82061, 98118, 120524, 153131]
 # #     too_long_in_exem = []
@@ -154,12 +160,12 @@ def load_data(srl='framenet', language='ko', fnversion=1.2, path=False, exem=Fal
             trn = trn_d
     else:
         trn = trn_d
-    
         
-#     print('# of instances in trn:', len(trn))
-#     print('# of instances in dev:', len(dev))
-#     print('# of instances in tst:', len(tst))
-#     print('data example:', trn[0])
+    if info:
+        print('# of instances in trn:', len(trn))
+        print('# of instances in dev:', len(dev))
+        print('# of instances in tst:', len(tst))
+        print('data example:', trn[0])
     
     return trn, dev, tst
                 

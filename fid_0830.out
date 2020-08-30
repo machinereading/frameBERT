@@ -1,0 +1,27 @@
+Using TensorFlow backend.
+
+###DEVICE: cuda
+
+###DEVICE: cuda
+#####
+	task: framenet
+	language: en
+	fn_version: 1.7
+used dictionary:
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.7_lu2idx.json
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.7_lufrmap.json
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.7_bio_frargmap.json
+# of instances in trn: 19391
+# of instances in dev: 2272
+# of instances in tst: 6714
+data example: [['Greece', 'wildfires', 'force', 'thousands', 'to', '<tgt>', 'evacuate', '</tgt>'], ['_', '_', '_', '_', '_', '_', 'evacuate.v', '_'], ['_', '_', '_', '_', '_', '_', 'Escaping', '_'], ['O', 'O', 'O', 'B-Escapee', 'O', 'X', 'O', 'X']]
+[['Greece', 'wildfires', 'force', 'thousands', 'to', '<tgt>', 'evacuate', '</tgt>'], ['_', '_', '_', '_', '_', '_', 'evacuate.v', '_'], ['_', '_', '_', '_', '_', '_', 'Escaping', '_'], ['O', 'O', 'O', 'B-Escapee', 'O', 'X', 'O', 'X']]
+
+your model would be saved at /disk/frameBERT/models/frameid-fn17-wo-exem/
+
+loading a pre-trained model...
+... is done. 0hour:0min:6sec
+
+converting data to BERT input...
+... is done 0hour:0min:50sec
+Epoch:   0%|                                                                       | 0/20 [00:00<?, ?it/s]

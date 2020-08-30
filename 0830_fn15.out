@@ -1,0 +1,26 @@
+Using TensorFlow backend.
+
+###DEVICE: cuda
+
+###DEVICE: cuda
+#####
+	task: framenet
+	language: en
+	fn_version: 1.5
+used dictionary:
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.5_lu2idx.json
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.5_lufrmap.json
+	 /disk/frameBERT/frameBERT/src/../koreanframenet/resource/info/fn1.5_bio_frargmap.json
+[['12-year-old', 'boy', 'reports', 'seeing', 'man', 'launch', 'rubber', 'boat', 'from', 'car', 'parked', 'the', '<tgt>', 'harbor', '</tgt>', '.'], ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 'harbor.n', '_', '_'], ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 'Locale_by_use', '_', '_'], ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'X', 'B-Locale', 'X', 'O']]
+
+your model would be saved at /disk/frameBERT/models/enModel-fn15/
+
+loading a pre-trained model...
+... is done. 0hour:0min:5sec
+
+converting data to BERT input...
+... is done 0hour:0min:43sec
+Epoch:   0%|                                                                       | 0/20 [00:00<?, ?it/s]../frameBERT/src/utils.py:290: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  pred_logits = sm(masked_logit).view(1,-1)
+Epoch:   5%|██▉                                                        | 1/20 [19:21<6:07:53, 1161.74s/it]Epoch:  10%|█████▉                                                     | 2/20 [39:11<5:51:02, 1170.13s/it]Epoch:  15%|████████▊                                                  | 3/20 [59:02<5:33:20, 1176.51s/it]Epoch:  20%|███████████▍                                             | 4/20 [1:18:54<5:14:58, 1181.18s/it]Epoch:  25%|██████████████▎                                          | 5/20 [1:38:46<4:56:05, 1184.35s/it]Epoch:  30%|█████████████████                                        | 6/20 [1:58:38<4:36:52, 1186.62s/it]Epoch:  35%|███████████████████▉                                     | 7/20 [2:18:32<4:17:34, 1188.81s/it]Epoch:  40%|██████████████████████▊                                  | 8/20 [2:38:24<3:57:57, 1189.75s/it]Epoch:  45%|█████████████████████████▋                               | 9/20 [2:58:14<3:38:08, 1189.86s/it]Epoch:  50%|████████████████████████████                            | 10/20 [3:18:06<3:18:26, 1190.60s/it]Epoch:  55%|██████████████████████████████▊                         | 11/20 [3:37:59<2:58:39, 1191.08s/it]Epoch:  60%|█████████████████████████████████▌                      | 12/20 [3:57:48<2:38:44, 1190.51s/it]Epoch:  65%|████████████████████████████████████▍                   | 13/20 [4:17:37<2:18:50, 1190.04s/it]Epoch:  70%|███████████████████████████████████████▏                | 14/20 [4:37:26<1:58:58, 1189.67s/it]Epoch:  75%|██████████████████████████████████████████              | 15/20 [4:57:14<1:39:06, 1189.37s/it]Epoch:  80%|████████████████████████████████████████████▊           | 16/20 [5:17:04<1:19:18, 1189.61s/it]Epoch:  85%|█████████████████████████████████████████████████▎        | 17/20 [5:36:55<59:30, 1190.07s/it]Epoch:  90%|████████████████████████████████████████████████████▏     | 18/20 [5:56:46<39:40, 1190.23s/it]Epoch:  95%|███████████████████████████████████████████████████████   | 19/20 [6:16:37<19:50, 1190.33s/it]Epoch: 100%|██████████████████████████████████████████████████████████| 20/20 [6:36:27<00:00, 1190.37s/it]Epoch: 100%|██████████████████████████████████████████████████████████| 20/20 [6:36:27<00:00, 1189.38s/it]
+...training is done. ( 6hour:37min:10sec )
