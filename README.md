@@ -150,6 +150,38 @@ Then, you can use it with the `POST` method to the url `XXX.XXX.XXX.XXX:8888/fra
 }
 ```
  
+ 
+ 
+## How to train a model?
+
+### Prepare the FrameNet dataset
+```
+# such as
+[
+ [
+  ['Greece', 'wildfires', 'force', 'thousands', 'to', '<tgt>', 'evacuate', '</tgt>'], # token list (target is indicated by the special tokens)
+  ['_', '_', '_', '_', '_', '_', 'evacuate.v', '_'],                                  # lu list (lu for target, else '_'
+  ['_', '_', '_', '_', '_', '_', 'Escaping', '_'],                                    # Frame list (frame for target, else '_')
+  ['O', 'O', 'O', 'B-Escapee', 'O', 'X', 'O', 'X']                                    # FE list (IOB scheme, 'X' for the special tokens)
+ ],
+ ...
+]
+```
+
+### Train the model 
+
+(reference: train.ipynb)
+```
+python train.py --train {TRAINING DATA, e.g., efn} --model_path {DIRECTORY TO SAVE YOUR MODEL} --pretrained_model {default="bert-base-multilingual-cased"} --early_stopping {default=TRUE} --epochs {default=20}
+```
+
+### Evaluate the model
+
+(reference: train.ipynb)
+```
+python evaluate.py --language {default='ko') --model {DIRECTORY OF YOUR MODEL} --test {test_data} --reult {DIRECTORY TO SAVE THE RESULT}
+```
+
 
 
 ## Licenses
