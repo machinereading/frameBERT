@@ -1,6 +1,3 @@
-# frameBERT: BERT for frame-semantic parsing
-**\*\*\*\*\* \[Update\] April, 2020. THIS IS A WORKING PROJECT  \*\*\*\*\***
-
 The frameBERT is available for both of [English FrameNet 1.7](https://framenet.icsi.berkeley.edu/fndrupal/) and [Korean FrameNet 1.1](https://github.com/machinereading/koreanframenet).
 
 ## About
