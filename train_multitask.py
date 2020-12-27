@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[23]:
 
 
 import json
@@ -41,22 +41,71 @@ torch.cuda.empty_cache()
 
 # # Define task
 
-# In[2]:
+# In[19]:
 
 
 srl = 'framenet'
-language = 'en'
-fnversion = '1.5'
+language = 'multilingual'
+fnversion = '1.2'
 
 print('#####')
 print('\ttask:', srl)
 print('\tlanguage:', language)
 print('\tfn_version:', fnversion)
+bert_io = utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
 
 
-# In[3]:
+# # Load data
+
+# In[20]:
 
 
+from koreanframenet import koreanframenet
+kfn = koreanframenet.interface(version=fnversion)
+
+en_trn, en_dev, en_tst = dataio.load_data(srl=srl, language='en')
+
+ekfn_trn_d, ekfn_tst_d = kfn.load_data(source='efn')
+jkfn_trn_d, jkfn_tst_d = kfn.load_data(source='jfn')
+skfn_trn_d, skfn_unlabel_d, skfn_tst_d = kfn.load_data(source='sejong')
+pkfn_trn_d, pkfn_unlabel_d, pkfn_tst_d = kfn.load_data(source='propbank')
+
+ekfn_trn = dataio.data2tgt_data(ekfn_trn_d, mode='train')
+ekfn_tst = dataio.data2tgt_data(ekfn_tst_d, mode='train')
+
+jkfn_trn = dataio.data2tgt_data(jkfn_trn_d, mode='train')
+jkfn_tst = dataio.data2tgt_data(jkfn_tst_d, mode='train')
+
+skfn_trn = dataio.data2tgt_data(skfn_trn_d, mode='train')
+skfn_unlabel = dataio.data2tgt_data(skfn_unlabel_d, mode='train')
+skfn_tst = dataio.data2tgt_data(skfn_tst_d, mode='train')
+
+pkfn_trn = dataio.data2tgt_data(pkfn_trn_d, mode='train')
+pkfn_unlabel = dataio.data2tgt_data(pkfn_unlabel_d, mode='train')
+pkfn_tst = dataio.data2tgt_data(pkfn_tst_d, mode='train')
+
+
+# # Define Training data
+
+# In[22]:
+
+
+trn = en_trn + ekfn_trn + jkfn_trn
+print('Training data: en_trn + ekfn_trn + jkfn')
+print('# of instance in training data:', len(trn))
+print('training data example:')
+print(trn[0])
+print(trn[-1])
+
+
+# In[14]:
+
+
+try:
+    dir_path = os.path.dirname(os.path.abspath( __file__ ))
+except:
+    dir_path = '.'
+    
 # 실행시간 측정 함수
 import time
 
@@ -75,20 +124,12 @@ def tac():
     return result
 
 
-# In[4]:
-
-
-try:
-    dir_path = os.path.dirname(os.path.abspath( __file__ ))
-except:
-    dir_path = '.'
-
-
-# In[5]:
+# In[6]:
 
 
 def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
-          model_dir=False, epochs=20, fnversion=False, early_stopping=True, batch_size=6):
+          model_dir=False, epochs=20, fnversion=False, early_stopping=True, batch_size=6, 
+          trn=False):
     
     tic()
     
@@ -118,6 +159,7 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
     print('... is done.', tac())
     
     print('\nconverting data to BERT input...')
+    print('# of instances:', len(trn))
     trn_data = bert_io.convert_to_bert_input_JointShallowSemanticParsing(trn)
     sampler = RandomSampler(trn)
     trn_dataloader = DataLoader(trn_data, sampler=sampler, batch_size=batch_size)
@@ -172,6 +214,8 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
             # update parameters
             optimizer.step()
             model.zero_grad()
+            
+#             break
 
         if early_stopping == True:
             model.save_pretrained(model_dummy_path)
@@ -220,19 +264,9 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
             model.save_pretrained(model_saved_path)
 
             num_of_epoch += 1
-           
+            
         
     print('...training is done. (', tac(), ')')
-
-
-# # Load dataset
-
-# In[4]:
-
-
-# bert_io = utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
-trn, dev, tst = dataio.load_data(language=language, fnversion=1.7, info=True)
-print(trn[0])
 
 
 # # Training
@@ -240,10 +274,13 @@ print(trn[0])
 # In[7]:
 
 
-epochs = 20
-model_dir = '/disk/frameBERT/models/enModel-fn15'
+epochs = 50
+model_dir = '/disk/frameBERT/cltl_eval/models/efn_ekfn_jkfn_multitask'
 early_stopping = False
 batch_size = 6
 
-train(epochs=epochs, model_dir=model_dir, fnversion=fnversion, early_stopping=early_stopping, batch_size=batch_size)
+train(PRETRAINED_MODEL="bert-base-multilingual-cased", 
+      trn=trn,
+      epochs=epochs, model_dir=model_dir, fnversion=fnversion, 
+      early_stopping=early_stopping, batch_size=batch_size)
 

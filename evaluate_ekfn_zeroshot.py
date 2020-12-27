@@ -15,12 +15,20 @@ from pprint import pprint
 
 # # Define task
 
+# In[ ]:
+
+
+# model_path = '/disk/frameBERT/models/enModel-with-exemplar/'
+model_path = '/disk/frameBERT/models/enModel-fn17/'
+fname = '/disk/frameBERT/cltl_eval/eval_result/ekfn_zeroshot_wo_exem.txt'
+
+
 # In[2]:
 
 
 srl = 'framenet'
-language = 'en'
-fnversion = 1.5
+language = 'ko'
+fnversion = '1.2'
 
 
 # # Load data
@@ -28,18 +36,44 @@ fnversion = 1.5
 # In[3]:
 
 
-trn, dev, tst = dataio.load_data(srl=srl, language=language, fnversion=fnversion, exem=False, info=True)
+from koreanframenet import koreanframenet
+kfn = koreanframenet.interface(version=fnversion)
+
+ekfn_trn_d = kfn.load_data(source='efn')
+ekfn_tst_d = kfn.load_data(source='efn_test')
+jkfn_d = kfn.load_data(source='jfn')
+skfn_d = kfn.load_data(source='sejong')
+pkfn_d = kfn.load_data(source='propbank')
+
+ekfn_trn = dataio.data2tgt_data(ekfn_trn_d, mode='train')
+ekfn_tst = dataio.data2tgt_data(ekfn_tst_d, mode='train')
+jkfn = dataio.data2tgt_data(jkfn_d, mode='train')
+skfn = dataio.data2tgt_data(skfn_d, mode='train')
+pkfn = dataio.data2tgt_data(pkfn_d, mode='train')
 
 
-# In[4]:
+# In[ ]:
+
+
+tst = ekfn_tst
+print(len(tst))
+print(tst[0])
+
+
+# # Evaluate Models
+
+# In[ ]:
 
 
 # Parsing Gold Data
 
-def test_model(model_path, masking=True, language='en'):
+def test_model(model_path, masking=True, language='ko'):
 #     torch.cuda.set_device(device)
-    model = frame_parser.FrameParser(srl=srl,gold_pred=True, fnversion=fnversion,
-                                     model_path=model_path, masking=masking, language=language)
+    model = frame_parser.FrameParser(srl=srl,gold_pred=True, 
+                                     fnversion=fnversion,
+                                     model_path=model_path, 
+                                     masking=masking, 
+                                     language=language)
     
     parsed_result = []
     for instance in tst:
@@ -50,31 +84,11 @@ def test_model(model_path, masking=True, language='en'):
 #         break
         
     return parsed_result
-        
-# parsed = test_model('/disk/frameBERT/models/joint/36/', language=language)
 
-
-# # Data format example
-
-# In[5]:
-
-
-print('\ntest_data')
-print(tst[0])
-
-# print('\nparsed_data')
-# print(parsed[0])
-
-
-# # Evaluate Models
 
 # In[6]:
 
 
-if fnversion == 1.7:
-    model_path = '/disk/frameBERT/models/enModel-fn17/'
-elif fnversion == 1.5:
-    model_path = '/disk/frameBERT/models/enModel-fn15-exemplar/'
 models = glob.glob(model_path+'*')
 
 result = {}
@@ -82,8 +96,7 @@ result = {}
 for model_path in models:
     print('model:', model_path)
     parsed_result = test_model(model_path, language=language)
-    frameid, arg_precision, arg_recall, arg_f1, full_precision, full_recall, full_f1 = eval_fn.evaluate(tst, parsed_result, 
-                                                                                                        fnversion=fnversion)
+    frameid, arg_precision, arg_recall, arg_f1, full_precision, full_recall, full_f1 = eval_fn.evaluate(tst, parsed_result)
     
     d = {}
     d['frameid'] = frameid
@@ -95,13 +108,7 @@ for model_path in models:
     d['full_f1'] = full_f1
     result[model_path] = d
     pprint(d)
-    
-#     break
-    
-# pprint(result)
 
-
-# # Evaluate Models
 
 # In[7]:
 
@@ -120,12 +127,8 @@ for m in result:
     full_r = str(result[m]['full_recall'])
     full_f1 = str(result[m]['full_f1'])
     line = epoch+'\t'+senseid+'\t'+arg_p+'\t'+arg_r+'\t'+arg_f1+'\t'+full_p+'\t'+full_r+'\t'+full_f1
-    lines.append(line)
-    
-if fnversion == 1.7:
-    fname = '/disk/frameBERT/eval_result/en17-wo-exem.txt'
-elif fnversion == 1.5:
-    fname = '/disk/frameBERT/eval_result/en15-exem.txt'
+    lines.append(line)    
+
 with open(fname, 'w') as f:
     for line in lines:
         f.write(line + '\n')

@@ -20,7 +20,7 @@ from pprint import pprint
 
 srl = 'framenet'
 language = 'en'
-fnversion = 1.5
+fnversion = 1.7
 
 
 # # Load data
@@ -74,7 +74,7 @@ print(tst[0])
 if fnversion == 1.7:
     model_path = '/disk/frameBERT/models/enModel-fn17/'
 elif fnversion == 1.5:
-    model_path = '/disk/frameBERT/models/enModel-fn15-exemplar/'
+    model_path = '/disk/frameBERT/models/enModel-fn15/'
 models = glob.glob(model_path+'*')
 
 result = {}
@@ -82,8 +82,7 @@ result = {}
 for model_path in models:
     print('model:', model_path)
     parsed_result = test_model(model_path, language=language)
-    frameid, arg_precision, arg_recall, arg_f1, full_precision, full_recall, full_f1 = eval_fn.evaluate(tst, parsed_result, 
-                                                                                                        fnversion=fnversion)
+    frameid, arg_precision, arg_recall, arg_f1, full_precision, full_recall, full_f1 = eval_fn.evaluate(tst, parsed_result)
     
     d = {}
     d['frameid'] = frameid
@@ -100,8 +99,6 @@ for model_path in models:
     
 # pprint(result)
 
-
-# # Evaluate Models
 
 # In[7]:
 
@@ -123,9 +120,9 @@ for m in result:
     lines.append(line)
     
 if fnversion == 1.7:
-    fname = '/disk/frameBERT/eval_result/en17-wo-exem.txt'
+    fname = '/disk/frameBERT/eval_result/en17-exem-goldframe.txt'
 elif fnversion == 1.5:
-    fname = '/disk/frameBERT/eval_result/en15-exem.txt'
+    fname = '/disk/frameBERT/eval_result/en15-wo-exem.txt'
 with open(fname, 'w') as f:
     for line in lines:
         f.write(line + '\n')

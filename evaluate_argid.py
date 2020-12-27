@@ -20,7 +20,7 @@ from pprint import pprint
 
 srl = 'framenet'
 language = 'en'
-fnversion = 1.5
+fnversion = 1.7
 
 
 # # Load data
@@ -71,10 +71,7 @@ print(tst[0])
 # In[6]:
 
 
-if fnversion == 1.7:
-    model_path = '/disk/frameBERT/models/enModel-fn17/'
-elif fnversion == 1.5:
-    model_path = '/disk/frameBERT/models/enModel-fn15-exemplar/'
+model_path = '/disk/frameBERT/models/argid-fn17-exem/'
 models = glob.glob(model_path+'*')
 
 result = {}
@@ -101,8 +98,6 @@ for model_path in models:
 # pprint(result)
 
 
-# # Evaluate Models
-
 # In[7]:
 
 
@@ -122,10 +117,8 @@ for m in result:
     line = epoch+'\t'+senseid+'\t'+arg_p+'\t'+arg_r+'\t'+arg_f1+'\t'+full_p+'\t'+full_r+'\t'+full_f1
     lines.append(line)
     
-if fnversion == 1.7:
-    fname = '/disk/frameBERT/eval_result/en17-wo-exem.txt'
-elif fnversion == 1.5:
-    fname = '/disk/frameBERT/eval_result/en15-exem.txt'
+
+fname = '/disk/frameBERT/eval_result/argid-fn17-exem.txt'
 with open(fname, 'w') as f:
     for line in lines:
         f.write(line + '\n')

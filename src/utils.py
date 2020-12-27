@@ -93,7 +93,10 @@ class for_BERT():
         self.idx2bio_argument = dict(zip(self.bio_argument2idx.values(),self.bio_argument2idx.keys()))
             
         if language == 'en':
-            frargmap_path = data_path+'bio_frargmap.json'
+            if fnversion != 1.7:
+                frargmap_path = data_path+'bio_frargmap.json'
+            else:
+                frargmap_path = dir_path+'/koreanframenet/resource/info/mul_bio_frargmap.json'
         else:
             frargmap_path = dir_path+'/koreanframenet/resource/info/mul_bio_frargmap.json'
         with open(frargmap_path,'r') as f:

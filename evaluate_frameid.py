@@ -71,7 +71,7 @@ print(tst[0])
 # In[6]:
 
 
-model_path = '/disk/frameBERT/models/frameid-fn17-wo-exem/'
+model_path = '/disk/frameBERT/models/frameid-fn17-exem/'
 models = glob.glob(model_path+'*')
 
 result = {}
@@ -118,7 +118,7 @@ for m in result:
     lines.append(line)
     
 
-fname = '/disk/frameBERT/eval_result/frameid-fn17-wo-exem.txt'
+fname = '/disk/frameBERT/eval_result/frameid-fn17-exem.txt'
 with open(fname, 'w') as f:
     for line in lines:
         f.write(line + '\n')

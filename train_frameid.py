@@ -231,11 +231,11 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
 
 # # Load dataset
 
-# In[6]:
+# In[1]:
 
 
 bert_io = utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
-trn, dev, tst = dataio.load_data(language=language, fnversion=fnversion)
+trn, dev, tst = dataio.load_data(language=language, fnversion=fnversion, exem=True, info=True)
 print(trn[0])
 
 
@@ -245,7 +245,7 @@ print(trn[0])
 
 
 epochs = 20
-model_dir = '/disk/frameBERT/models/frameid-fn17-wo-exem/'
+model_dir = '/disk/frameBERT/models/frameid-fn17-exem/'
 early_stopping = False
 batch_size = 6
 

@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[23]:
+# In[1]:
 
 
 import json
@@ -41,7 +41,7 @@ torch.cuda.empty_cache()
 import argparse
 
 
-# In[ ]:
+# In[2]:
 
 
 try:
@@ -69,7 +69,7 @@ def tac():
 
 # # Define task
 
-# In[19]:
+# In[3]:
 
 
 srl = 'framenet'
@@ -77,32 +77,21 @@ language = 'multilingual'
 fnversion = '1.2'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--train', required=True, help='choose the training data')
-parser.add_argument('--model_path', required=True, help='model directory', default='/disk/frameBERT/cltl_eval/models/ekfn')
-parser.add_argument('--pretrained_model', required=False, help='bert-base-multilingual-cased')
-parser.add_argument('--early_stopping', required=False, help='early_stopping', default=True)
-parser.add_argument('--epochs', required=False, help='early_stopping', default=20)
+parser.add_argument('--model', required=False, help='모델 폴더', default='/disk/frameBERT/cltl_eval/models/efn_ekfn_multitask/34')
+parser.add_argument('--domain', required=True, help='도메인')
+parser.add_argument('--result', required=False, help='결과 저장 폴더', default=False)
 args = parser.parse_args()
 
-if '/models' not in args.model_path:
-    args.model_path = '/disk/frameBERT/cltl_eval/models/'+args.model_path
-
-# if args.model_path[-1] != '/':
-#     args.model_path = args.model_path+'/'
-
 print('#####')
-print('\ttraining data:', args.train)
-print('\tpretrained_model:', args.pretrained_model)
-print('\tearly_stopping:', args.early_stopping)
-print('\tepochs:', args.epochs)
-
-
+print('\ttask:', srl)
+print('\tlanguage:', language)
+print('\tfn_version:', fnversion)
 bert_io = utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
 
 
 # # Load data
 
-# In[20]:
+# In[4]:
 
 
 from koreanframenet import koreanframenet
@@ -130,9 +119,9 @@ pkfn_unlabel = dataio.data2tgt_data(pkfn_unlabel_d, mode='train')
 pkfn_tst = dataio.data2tgt_data(pkfn_tst_d, mode='train')
 
 
-# # Define Training data
+# # Define Dataset
 
-# In[22]:
+# In[5]:
 
 
 trn_data = {}
@@ -140,56 +129,92 @@ trn_data['ekfn'] = ekfn_trn
 trn_data['jkfn'] = jkfn_trn
 trn_data['skfn'] = skfn_trn
 trn_data['pkfn'] = pkfn_trn
-trn_data['all'] = ekfn_trn + jkfn_trn + skfn_trn + pkfn_trn + skfn_unlabel + pkfn_unlabel
+trn_data['all'] = ekfn_trn + jkfn_trn + skfn_trn + pkfn_trn
 
 tst_data = {}
 tst_data['ekfn'] = ekfn_tst
 tst_data['jkfn'] = jkfn_tst
 tst_data['skfn'] = skfn_tst
 tst_data['pkfn'] = pkfn_tst
-tst_data['all'] = ekfn_tst + jkfn_tst + skfn_tst + pkfn_tst
 
+
+unlabeled_data = {}
+unlabeled_data['ekfn'] = ekfn_trn
+unlabeled_data['jkfn'] = jkfn_trn
+unlabeled_data['skfn'] = skfn_unlabel
+unlabeled_data['pkfn'] = pkfn_unlabel
+unlabeled_data['all'] = skfn_unlabel + pkfn_unlabel
+# unlabeled_data['all'] = jkfn_trn + skfn_trn + skfn_unlabel + pkfn_trn + pkfn_unlabel
+# unlabeled_data['skfn'] = skfn_trn + skfn_unlabel
+# unlabeled_data['pkfn'] = pkfn_trn + pkfn_unlabel
+
+
+# # Pre-trained Model
 
 # In[6]:
 
 
-def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
-          model_dir=False, epochs=20, fnversion=False, early_stopping=True, batch_size=6, 
-          trn=False, dev=False):
-    
-    tic()
-    
-    if model_dir[-1] != '/':
-        model_dir = model_dir+'/'
+pretrained_model = args.model
+
+if args.model[-1] == '/':
+    model_name = args.model.split('/')[-3]
+else:
+    model_name = args.model.split('/')[-2]
+# pretrained_model = '/disk/frameBERT/models/enModel-fn17/2'
+print('pretrained_model:', pretrained_model)
+
+
+# # Parsing Unlabeld data
+
+# In[7]:
+
+
+def parsing_unlabeled_data(model_path, masking=True, language='ko', data='ekfn', threshold=0.7, added_list=[]):
+#     torch.cuda.set_device(device)
+    model = frame_parser.FrameParser(srl=srl,gold_pred=True, model_path=model_path, masking=masking, language=language, info=False)    
+    result = []
+    for i in range(len(unlabeled_data[data])):
+        instance = unlabeled_data[data][i]
         
-    if early_stopping == True:
-        model_saved_path = model_dir+'best/'
-        model_dummy_path = model_dir+'dummy/'
-        if not os.path.exists(model_dummy_path):
-            os.makedirs(model_dummy_path)
-    else:
-        model_saved_path = model_dir        
+        if i not in added_list:
+
+            parsed = model.parser(instance, result_format='all')        
+            conll = parsed['conll'][0]
+            frame_score = parsed['topk']['targets'][0]['frame_candidates'][0][-1]
+
+            if frame_score >= float(threshold):
+                parsed_result = conll
+                result.append(parsed_result)
+                added_list.append(i)
+            
+    added_list.sort()
+        
+    return result, added_list
+
+
+# In[8]:
+
+
+def train(model_path="bert-base-multilingual-cased",
+          model_saved_path=False, epochs=3, batch_size=6, 
+          trn=False): 
             
     if not os.path.exists(model_saved_path):
         os.makedirs(model_saved_path)
-    print('\nyour model would be saved at', model_saved_path)
-
+    print('### START TRAINING:', model_saved_path)
     # load a pre-trained model first
-    print('\nloading a pre-trained model...')
-    model = BertForJointShallowSemanticParsing.from_pretrained(PRETRAINED_MODEL, 
+    model = BertForJointShallowSemanticParsing.from_pretrained(model_path, 
                                                                num_senses = len(bert_io.sense2idx), 
                                                                num_args = len(bert_io.bio_arg2idx),
                                                                lufrmap=bert_io.lufrmap, 
                                                                frargmap = bert_io.bio_frargmap)
     model.to(device)
-    print('... is done.', tac())
     
     print('\nconverting data to BERT input...')
     print('# of instances:', len(trn))
     trn_data = bert_io.convert_to_bert_input_JointShallowSemanticParsing(trn)
     sampler = RandomSampler(trn)
     trn_dataloader = DataLoader(trn_data, sampler=sampler, batch_size=batch_size)
-    print('... is done', tac())
     
     # load optimizer
     FULL_FINETUNING = True
@@ -208,10 +233,6 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
     optimizer = Adam(optimizer_grouped_parameters, lr=3e-5)
     
     max_grad_norm = 1.0
-    num_of_epoch = 0
-    
-    best_score = 0
-    renew_stack = 0
     
     for _ in trange(epochs, desc="Epoch"):
         
@@ -239,80 +260,79 @@ def train(PRETRAINED_MODEL="bert-base-multilingual-cased",
             
             # update parameters
             optimizer.step()
-            model.zero_grad()
-            
-#             break
+            model.zero_grad()            
 
-        if early_stopping == True:
-            model.save_pretrained(model_dummy_path)
-            
-            # evaluate the model using dev dataset
-            print('\n### eval by dev')
-            test_model = frame_parser.FrameParser(srl=srl, gold_pred=True, 
-                                                  info=False, model_path=model_dummy_path, language=language)
-            parsed_result = []
-            
-            for instance in dev:
-                result = test_model.parser(instance)[0]
-                parsed_result.append(result)
-                
-            del test_model
-                
-            frameid, arg_precision, arg_recall, arg_f1, full_precision, full_recall, full_f1 = eval_fn.evaluate(dev, parsed_result)
-            d = {}
-            d['frameid'] = frameid
-            d['arg_precision'] = arg_precision
-            d['arg_recall'] = arg_recall
-            d['arg_f1'] = arg_f1
-            d['full_precision'] = full_precision
-            d['full_recall'] = full_recall
-            d['full_f1'] = full_f1
-            
-            if full_f1 > best_score:
-                model.save_pretrained(model_saved_path)
-                best_score = full_f1
-                
-                renew_stack = 0
-            else:
-                renew_stack +=1
-                
-            pprint(d)
-            print('Best score:', best_score)
-        
-            # 성능이 3epoch 이후에도 개선되지 않으면 중단
-            if renew_stack >= 3:
-                break
-            
-        elif early_stopping == False:
-            # save your model for each epochs
-            model_saved_path = model_dir+str(num_of_epoch)+'/'
-            if not os.path.exists(model_saved_path):
-                os.makedirs(model_saved_path)
-            model.save_pretrained(model_saved_path)
+    # save your model at 10 epochs
+    model.save_pretrained(model_saved_path)
+    print('... TRAINNG is DONE')
 
-            num_of_epoch += 1
-            
+
+# In[ ]:
+
+
+model_saved_dir = '/disk/frameBERT/cltl_eval/models/'
+
+if args.result:
+    result_dir = args.result
+else:
+    result_dir = 'self_'+ args.domain +'_using_'+ model_name + '_with_labeled'
+model_saved_dir = model_saved_dir + result_dir
+
+if model_saved_dir[-1] != '/':
+    model_saved_dir = model_saved_dir+'/'
+    
+if not os.path.exists(model_saved_dir):
+    os.makedirs(model_saved_dir)
+print('your models are saved to', model_saved_dir)
+    
+iters = 5
+threshold = 0.9
+instance = []
+added_list = []
+batch_size = 6
+
+for _ in trange(iters, desc="Iteration"):
+    iteration = _ + 1    
+    
+    if iteration == 1:
+        pre_model = BertForJointShallowSemanticParsing.from_pretrained(pretrained_model, 
+                                                               num_senses = len(bert_io.sense2idx), 
+                                                               num_args = len(bert_io.bio_arg2idx),
+                                                               lufrmap=bert_io.lufrmap, 
+                                                               frargmap = bert_io.bio_frargmap)
+        pre_model.to(device)
         
-    print('...training is done. (', tac(), ')')
+        model_saved_path = model_saved_dir+'0/'
+        if not os.path.exists(model_saved_path):
+            os.makedirs(model_saved_path)
+        pre_model.save_pretrained(model_saved_path)
+        
+    
+        
+        
+    parsing_model_path = model_saved_dir + str(iteration-1) +'/'
+    model_saved_path = model_saved_dir+str(iteration)+'/'
+    if not os.path.exists(model_saved_path):
+        os.makedirs(model_saved_path)
+    
+    print('\n### ITERATION:', str(iteration))
+    trn = trn_data['all']
+    print('### PARSING START...')
+    parsed_result, added_list = parsing_unlabeled_data(parsing_model_path, data=args.domain, 
+                                                       masking=True, 
+                                                       threshold=threshold, added_list=added_list)
+    instance += parsed_result
+    print('... is done')
+    
+    # training process
+    trn_instance = trn + instance
+    
+    print('\n# of original training data:', len(trn))
+    print('# of all unlabeled data:', len(unlabeled_data[args.domain]))
+    print('# of psuedo labeled data:', len(instance), '('+str((round(len(instance)/len(unlabeled_data[args.domain])*100), 2))+'%)')
+    print('Total Training Instance:', len(trn_instance), '\n') 
+    
+    train(model_path=parsing_model_path, model_saved_path=model_saved_path, trn=trn_instance)    
 
 
 # # Training
-
-# In[7]:
-
-
-epochs = args.epochs
-# model_dir = '/disk/frameBERT/cltl_eval/models/efn_ekfn_jkfn_multitask'
-early_stopping = args.early_stopping
-batch_size = 6
-
-trn = trn_data[args.train]
-pre_trained_model = args.pretrained_model
-model_dir = args.model_path
-dev = tst_data[args.train]
-
-train(PRETRAINED_MODEL=pre_trained_model, 
-      trn=trn, dev=dev,
-      epochs=epochs, model_dir=model_dir, fnversion=fnversion, 
-      early_stopping=early_stopping, batch_size=batch_size)
-
