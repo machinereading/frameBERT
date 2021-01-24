@@ -11,7 +11,7 @@ sys.path.append('../')
 import os
 import numpy as np
 from transformers import *
-from frameBERT.src import utils
+from frameBERT.src import utils as frameBERT_utils
 from frameBERT.src import dataio
 from frameBERT import target_identifier
 from frameBERT import inference
@@ -68,7 +68,7 @@ class FrameParser():
             print('pretrained BERT:', self.pretrained)
             print('using TGT special token:', self.tgt)
         
-        self.bert_io = utils.for_BERT(mode='predict', srl=self.srl, language=self.language, 
+        self.bert_io = frameBERT_utils.for_BERT(mode='predict', srl=self.srl, language=self.language, 
                               masking=self.masking, fnversion=self.fnversion,
                               pretrained=self.pretrained, info=info)  
         
@@ -153,7 +153,7 @@ class FrameParser():
                                                           token_type_ids=b_token_type_ids, attention_mask=b_masks)
                 
 
-                lufr_masks = utils.get_masks(b_lus, 
+                lufr_masks = frameBERT_utils.get_masks(b_lus, 
                                              self.bert_io.lufrmap, 
                                              num_label=len(self.bert_io.sense2idx), 
                                              masking=self.masking).to(device)
@@ -167,7 +167,7 @@ class FrameParser():
                 for b_idx in range(len(b_orig_tok_to_maps)):
                     orig_tok_to_map = b_orig_tok_to_maps[b_idx]
                     bert_token = self.bert_io.tokenizer.convert_ids_to_tokens(b_input_ids_np[b_idx])
-                    tgt_idx = utils.get_tgt_idx(bert_token, tgt=self.tgt)
+                    tgt_idx = frameBERT_utils.get_tgt_idx(bert_token, tgt=self.tgt)
                     
                     input_id, sense_logit, arg_logit = [],[],[]
 
@@ -195,10 +195,10 @@ class FrameParser():
                     arg_logit = arg_logits[b_idx]
                     
                     lufr_mask = lufr_masks[b_idx]                        
-                    masked_sense_logit = utils.masking_logit(sense_logit, lufr_mask)
-                    pred_sense, sense_score = utils.logit2label(masked_sense_logit)
+                    masked_sense_logit = frameBERT_utils.masking_logit(sense_logit, lufr_mask)
+                    pred_sense, sense_score = frameBERT_utils.logit2label(masked_sense_logit)
                     
-                    sense_candis = utils.logit2candis(masked_sense_logit, 
+                    sense_candis = frameBERT_utils.logit2candis(masked_sense_logit, 
                                                       candis=frame_candis, 
                                                       idx2label=self.bert_io.idx2sense)
                     sense_candis_list.append(sense_candis)
@@ -206,12 +206,12 @@ class FrameParser():
                     if self.srl == 'framenet':
                         arg_logit_np = arg_logit.detach().cpu().numpy()
                         arg_logit = []
-                        frarg_mask = utils.get_masks([pred_sense], 
+                        frarg_mask = frameBERT_utils.get_masks([pred_sense], 
                                                      self.bert_io.bio_frargmap, 
                                                      num_label=len(self.bert_io.bio_arg2idx), 
                                                      masking=True).to(device)[0]
                         for logit in arg_logit_np:
-                            masked_logit = utils.masking_logit(logit, frarg_mask)
+                            masked_logit = frameBERT_utils.masking_logit(logit, frarg_mask)
                             arg_logit.append(np.array(masked_logit))
                         arg_logit = torch.Tensor(arg_logit).to(device)
                     else:
@@ -219,7 +219,7 @@ class FrameParser():
                     
                     pred_arg = []
                     for logit in arg_logit:
-                        label, score = utils.logit2label(logit)
+                        label, score = frameBERT_utils.logit2label(logit)
                         pred_arg.append(int(label))
                         
                     pred_senses.append([int(pred_sense)])

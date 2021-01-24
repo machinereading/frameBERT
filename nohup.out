@@ -1,0 +1,61 @@
+
+###DEVICE: cuda
+srl model: framenet
+language: en
+version: 1.2
+using viterbi: False
+using masking: True
+pretrained BERT: bert-base-multilingual-cased
+using TGT special token: True
+used dictionary:
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/fn1.7_lu2idx.json
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/fn1.7_lufrmap.json
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/mul_bio_frargmap.json
+...loaded model path: /home/hahmyg/models/frameBERT_en/
+/home/hahmyg/models/frameBERT_en/
+...model is loaded
+ * Serving Flask app "restApp" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://0.0.0.0:1106/ (Press CTRL+C to quit)
+ * Restarting with inotify reloader
+ * Debugger is active!
+ * Debugger PIN: 104-746-018
+../frameBERT/src/utils.py:293: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  pred_logits = sm(masked_logit).view(1,-1)
+../frameBERT/src/utils.py:301: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  pred_logits = sm(masked_logit).view(1,-1)
+143.248.135.149 - - [24/Jan/2021 20:00:54] "[37mPOST /frameBERT HTTP/1.1[0m" 200 -
+
+###DEVICE: cuda
+srl model: framenet
+language: ko
+version: 1.2
+using viterbi: False
+using masking: True
+pretrained BERT: bert-base-multilingual-cased
+using TGT special token: True
+used dictionary:
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/kfn1.2_lu2idx.json
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/kfn1.2_lufrmap.json
+	 /home/hahmyg/frameBERT/src/../koreanframenet/resource/info/mul_bio_frargmap.json
+...loaded model path: /home/hahmyg/models/frameBERT_mul/
+/home/hahmyg/models/frameBERT_mul/
+...model is loaded
+ * Serving Flask app "restApp" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://0.0.0.0:1107/ (Press CTRL+C to quit)
+ * Restarting with inotify reloader
+ * Debugger is active!
+ * Debugger PIN: 203-757-081
+143.248.135.149 - - [24/Jan/2021 20:02:51] "[37mPOST /frameBERT HTTP/1.1[0m" 200 -
+../frameBERT/src/utils.py:293: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  pred_logits = sm(masked_logit).view(1,-1)
+../frameBERT/src/utils.py:301: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  pred_logits = sm(masked_logit).view(1,-1)
+143.248.135.149 - - [24/Jan/2021 20:02:56] "[37mPOST /frameBERT HTTP/1.1[0m" 200 -

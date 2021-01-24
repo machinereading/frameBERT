@@ -21,7 +21,7 @@ import sys
 sys.path.insert(0,'../')
 sys.path.insert(0,'../../')
 from frameBERT.src import dataio
-from frameBERT.src import utils
+from frameBERT.src import utils as frameBERT_utils
 from torch.nn.parameter import Parameter
 from transformers import *
 
@@ -45,12 +45,12 @@ class FrameIdentifier(BertPreTrainedModel):
         self.init_weights()
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, lus=None, senses=None, args=None, using_gold_fame=False, position_ids=None, head_mask=None):
-        sequence_output, pooled_output = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)
+        sequence_output, pooled_output = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask, return_dict=False)
         pooled_output = self.dropout(pooled_output)
         
         sense_logits = self.sense_classifier(pooled_output)      
 
-        lufr_masks = utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
+        lufr_masks = frameBERT_utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
         
         sense_loss = 0 # loss for sense id
         arg_loss = 0 # loss for arg id
@@ -107,7 +107,7 @@ class ArgumentIdentifier(BertPreTrainedModel):
         sense_logits = self.sense_classifier(pooled_output)
         arg_logits = self.arg_classifier(sequence_output)        
 
-        lufr_masks = utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
+        lufr_masks = frameBERT_utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
         
         sense_loss = 0 # loss for sense id
         arg_loss = 0 # loss for arg id
@@ -128,10 +128,10 @@ class ArgumentIdentifier(BertPreTrainedModel):
                 sense_loss += loss_per_seq_for_sense
                 
                 #train arg classifier
-                masked_sense_logit = utils.masking_logit(sense_logit, lufr_mask)
-                pred_sense, sense_score = utils.logit2label(masked_sense_logit)
+                masked_sense_logit = frameBERT_utils.masking_logit(sense_logit, lufr_mask)
+                pred_sense, sense_score = frameBERT_utils.logit2label(masked_sense_logit)
 
-                frarg_mask = utils.get_masks([gold_sense], self.frargmap, num_label=self.num_args, masking=True).to(device)[0]                
+                frarg_mask = frameBERT_utils.get_masks([gold_sense], self.frargmap, num_label=self.num_args, masking=True).to(device)[0]                
                 loss_fct_arg = CrossEntropyLoss(weight = frarg_mask)
 
                 
@@ -191,7 +191,7 @@ class ArgumentBoundaryIdentifier(BertPreTrainedModel):
         if self.joint:
             pooled_output = self.dropout(pooled_output)
             sense_logits = self.sense_classifier(pooled_output)
-            lufr_masks = utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
+            lufr_masks = frameBERT_utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
             masked_sense_logits = sense_logits * lufr_masks
             
         arg_logits = self.arg_classifier(sequence_output)
@@ -250,14 +250,14 @@ class BertForJointShallowSemanticParsing(BertPreTrainedModel):
         self.init_weights()
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, lus=None, senses=None, args=None, using_gold_fame=False, position_ids=None, head_mask=None):
-        sequence_output, pooled_output = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)
+        sequence_output, pooled_output = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask, return_dict=False)
         sequence_output = self.dropout(sequence_output)
         pooled_output = self.dropout(pooled_output)
         
         sense_logits = self.sense_classifier(pooled_output)
         arg_logits = self.arg_classifier(sequence_output)        
 
-        lufr_masks = utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
+        lufr_masks = frameBERT_utils.get_masks(lus, self.lufrmap, num_label=self.num_senses, masking=self.masking).to(device)
         
         sense_loss = 0 # loss for sense id
         arg_loss = 0 # loss for arg id
@@ -278,10 +278,10 @@ class BertForJointShallowSemanticParsing(BertPreTrainedModel):
                 sense_loss += loss_per_seq_for_sense
                 
                 #train arg classifier
-                masked_sense_logit = utils.masking_logit(sense_logit, lufr_mask)
-                pred_sense, sense_score = utils.logit2label(masked_sense_logit)
+                masked_sense_logit = frameBERT_utils.masking_logit(sense_logit, lufr_mask)
+                pred_sense, sense_score = frameBERT_utils.logit2label(masked_sense_logit)
 
-                frarg_mask = utils.get_masks([pred_sense], self.frargmap, num_label=self.num_args, masking=True).to(device)[0]                
+                frarg_mask = frameBERT_utils.get_masks([pred_sense], self.frargmap, num_label=self.num_args, masking=True).to(device)[0]                
                 loss_fct_arg = CrossEntropyLoss(weight = frarg_mask)
 
                 

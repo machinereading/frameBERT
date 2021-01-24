@@ -11,7 +11,7 @@ import torch
 sys.path.append('../')
 import os
 from transformers import *
-from frameBERT.src import utils
+from frameBERT.src import utils as frameBERT_utils
 from frameBERT.src import dataio
 from frameBERT.src import eval_fn
 from frameBERT import frame_parser
@@ -24,10 +24,10 @@ from tqdm import tqdm, trange
 
 from pprint import pprint
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 n_gpu = torch.cuda.device_count()
-if device != "cpu":
-    torch.cuda.set_device(0)
+#if device != "cpu":
+#    torch.cuda.set_device(0)
 import pickle
 
 import numpy as np
@@ -97,7 +97,7 @@ print('\tearly_stopping:', args.early_stopping)
 print('\tepochs:', args.epochs)
 
 
-bert_io = utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
+bert_io = frameBERT_utils.for_BERT(mode='train', language=language, masking=True, fnversion=fnversion)
 
 
 # # Load data
